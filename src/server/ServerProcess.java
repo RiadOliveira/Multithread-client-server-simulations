@@ -24,7 +24,7 @@ public class ServerProcess {
   public static void run() {
     try {
       ServerSocket serverSocket = new ServerSocket(data.getPort());
-      for(int ind=0; ind<data.getquantityOfProcessesToConnect(); ind++) {
+      for(int ind=0; ind<data.getquantityOfClientsToConnect(); ind++) {
         Socket clientSocket = serverSocket.accept();
         Thread serverThread = new Thread(new ServerThread(clientSocket));
         serverThread.start();

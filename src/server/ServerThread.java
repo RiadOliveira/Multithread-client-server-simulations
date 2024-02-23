@@ -31,7 +31,7 @@ public class ServerThread implements Runnable {
 
     if(connectedClients == null) {
       connectedClients = new ArrayList<String>(
-        ServerProcess.getServerData().getquantityOfProcessesToConnect()
+        ServerProcess.getServerData().getquantityOfClientsToConnect()
       );
     };
   }

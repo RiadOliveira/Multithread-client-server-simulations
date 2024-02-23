@@ -1,30 +1,42 @@
 package src.server;
 
 public class ServerData {
-  private final String name;
+  private final String name, ip;
   private final int port;
-  private final int quantityOfProcessesToConnect;
-  private boolean closed;
+  private final int quantityOfClientsToConnect;
+  private boolean closed = false;
 
   public ServerData(
-    String name, int port,
-    int quantityOfProcessesToConnect
+    String name, String ip, int port,
+    int quantityOfClientsToConnect
   ) {
     this.name = name;
+    this.ip = ip;
     this.port = port;
-    this.quantityOfProcessesToConnect = quantityOfProcessesToConnect;
+    this.quantityOfClientsToConnect = quantityOfClientsToConnect;
+  }
+
+  public ServerData(String name, String ip, int port) {
+    this.name = name;
+    this.ip = ip;
+    this.port = port;
+    this.quantityOfClientsToConnect = 0;
   }
 
   public String getName() {
     return name;
   }
 
+  public String getIp() {
+    return ip;
+  }
+
   public int getPort() {
     return port;
   }
 
-  public int getquantityOfProcessesToConnect() {
-    return quantityOfProcessesToConnect;
+  public int getquantityOfClientsToConnect() {
+    return quantityOfClientsToConnect;
   }
 
   public boolean isClosed() {
