@@ -8,7 +8,7 @@ public class ConsoleOperationMessageOverwriter {
 
   public static void print(String content) {
     System.out.print(clearCurrentLineString);
-    System.out.println(content);
+    if(!content.isBlank()) System.out.println(content);
     System.out.print(Constants.OPERATION_MESSAGE);
   }
 }

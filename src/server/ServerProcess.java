@@ -24,6 +24,8 @@ public class ServerProcess {
   public static void run() {
     try {
       ServerSocket serverSocket = new ServerSocket(data.getPort());
+      System.out.println("Servidor iniciado, aguardando clientes...");
+
       for(int ind=0; ind<data.getquantityOfClientsToConnect(); ind++) {
         Socket clientSocket = serverSocket.accept();
         Thread serverThread = new Thread(new ServerThread(clientSocket));
@@ -33,6 +35,7 @@ public class ServerProcess {
       handleOperationInput();
 
       serverSocket.close();
+      scanner.close();
       data.setClosed(true);
     } catch (Exception exception) {
       exception.printStackTrace();

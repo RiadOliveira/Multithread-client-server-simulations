@@ -45,6 +45,7 @@ public class ClientProcess {
       handleOperationInput();
 
       for(Socket socket : serverSockets) socket.close();
+      scanner.close();
       data.setFinished(true);
     } catch (Exception exception) {
       exception.printStackTrace();
@@ -52,8 +53,9 @@ public class ClientProcess {
   }
 
   private static Socket connectToServerWithRetry(ServerData serverData) {
+    String serverName = serverData.getName();
     ConsoleOperationMessageOverwriter.print(
-      "Tentando conectar-se ao servidor " + serverData.getName() + "..."
+      "Tentando conectar-se ao servidor " + serverName + " ..."
     );
 
     Socket serverSocket = null;
@@ -61,20 +63,21 @@ public class ClientProcess {
       try {
         serverSocket = new Socket(serverData.getIp(), serverData.getPort());
       } catch(Exception exception) {
-        waitToReconnect();
+        waitToReconnect(serverName);
       }
     }
     
     ConsoleOperationMessageOverwriter.print(
-      "Servidor " + serverData.getName() + " conectado com sucesso!"
+      "Servidor " + serverName + " conectado com sucesso!"
     );
     return serverSocket;
   }
 
-  private static void waitToReconnect() {
+  private static void waitToReconnect(String serverName) {
     ConsoleOperationMessageOverwriter.print(
-      "Falha ao conectar-se ao servidor, tentando novamente em " +
-      WAIT_TIME_TO_TRY_RECONNECTION + " segundos..."
+      "Falha ao conectar-se ao servidor " + serverName +
+      ", tentando novamente em " + WAIT_TIME_TO_TRY_RECONNECTION +
+      " segundos ..."
     );
 
     try {
@@ -87,7 +90,7 @@ public class ClientProcess {
   }
 
   private static void handleOperationInput() {
-    System.out.print(Constants.OPERATION_MESSAGE);
+    ConsoleOperationMessageOverwriter.print("");
     String operationData = scanner.nextLine();
     if(operationData.equalsIgnoreCase(Constants.EXIT_OPTION)) return;
 

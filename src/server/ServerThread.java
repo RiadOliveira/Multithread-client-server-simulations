@@ -18,7 +18,7 @@ public class ServerThread implements Runnable {
   private static List<String> connectedClients;
   private int connectedClientIndex;
 
-  public static DTO currentDTOToSend;
+  public static DTO currentDTOToSend = null;
   private UUID idOfPreviousDTOToSend = null, idOfPreviousDTOReceived = null;
 
   private ObjectInputStream inputStream;
@@ -41,13 +41,13 @@ public class ServerThread implements Runnable {
       inputStream = new ObjectInputStream(clientSocket.getInputStream());
       outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
 
-      MessageReceiverThread messageReceiverThread = new MessageReceiverThread(
-        connectedClients.get(connectedClientIndex), inputStream
-      );
-      (new Thread(messageReceiverThread)).start();
-
       handleRecognitionCommunication();
-      while(!ServerProcess.getServerData().isClosed()) {
+      MessageReceiverThread messageReceiverThread = MessageReceiverThread.
+        GenerateAndStartMessageReceiverThread(
+          connectedClients.get(connectedClientIndex), inputStream
+        );
+
+      while(!serverClosed()) {
         handleMessageSending();
         handleMessageReceiving(messageReceiverThread.readDTO());
       }
@@ -62,6 +62,10 @@ public class ServerThread implements Runnable {
     }
   }
 
+  private synchronized boolean serverClosed() {
+    return ServerProcess.getServerData().isClosed();
+  } 
+
   private synchronized void handleRecognitionCommunication() throws AppException {
     ConsoleOperationMessageOverwriter.print(
       "Thread aguardando mensagem de reconhecimento..."
@@ -70,20 +74,21 @@ public class ServerThread implements Runnable {
     try {
       DTO recognitionDTO = (DTO) inputStream.readObject();
 
-      connectedClients.add(recognitionDTO.getMessage());
       connectedClientIndex = connectedClients.size();
+      connectedClients.add(recognitionDTO.getMessage());
 
       ConsoleOperationMessageOverwriter.print(
         "Cliente " + connectedClients.get(connectedClientIndex) +
         " reconhecido com sucesso!"
       );
     } catch (Exception exception) {
+      exception.printStackTrace();
       throw new AppException("Erro ao ler mensagem de reconhecimento!");
     }
   }
 
-  private void handleMessageSending() {
-    if(alreadyUsedDTO(idOfPreviousDTOToSend, currentDTOToSend)) return;
+  private synchronized void handleMessageSending() {
+    if(alreadyUsedOrInvalidDTO(idOfPreviousDTOToSend, currentDTOToSend)) return;
     idOfPreviousDTOToSend = currentDTOToSend.getId();
     
     try {
@@ -96,7 +101,10 @@ public class ServerThread implements Runnable {
       boolean receiverIsConnectedClient = receiverIndex == connectedClientIndex;
       boolean noThreadConnectedToClient = receiverIndex == -1;
 
-      if(receiverIsConnectedClient || noThreadConnectedToClient) sendUnicastDTO();
+      if(receiverIsConnectedClient || noThreadConnectedToClient) {
+        outputStream.writeObject(currentDTOToSend);
+        currentDTOToSend = null;
+      }
     } catch (Exception exception) {
       ConsoleOperationMessageOverwriter.print(
         "Falha ao enviar a mensagem para " + 
@@ -105,19 +113,12 @@ public class ServerThread implements Runnable {
     }
   }
 
-  private synchronized void sendUnicastDTO() throws Exception {
-    if(currentDTOToSend == null) return;
-
-    outputStream.writeObject(currentDTOToSend);
-    currentDTOToSend = null;
-  }
-
   private void handleMessageReceiving(DTO receivedMessage) {
-    if(alreadyUsedDTO(idOfPreviousDTOReceived, receivedMessage)) return;
+    if(alreadyUsedOrInvalidDTO(idOfPreviousDTOReceived, receivedMessage)) return;
     idOfPreviousDTOReceived = receivedMessage.getId();
 
-    boolean isMessageForThisServer = receivedMessage.getReceiver().equals(
-      ServerProcess.getServerData().getName()
+    boolean isMessageForThisServer = ServerProcess.getServerData().getName().equals(
+      receivedMessage.getReceiver()
     );
     if(isMessageForThisServer) {
       receivedMessage.print();
@@ -143,8 +144,8 @@ public class ServerThread implements Runnable {
     }
   }
 
-  private boolean alreadyUsedDTO(UUID idOfPreviousDTO, DTO currentDTO) {
-    return idOfPreviousDTO != null &&
-      idOfPreviousDTO.equals(currentDTO.getId());
+  private boolean alreadyUsedOrInvalidDTO(UUID idOfPreviousDTO, DTO currentDTO) {
+    if(currentDTO == null) return true;
+    return idOfPreviousDTO != null &&idOfPreviousDTO.equals(currentDTO.getId());
   }
 }

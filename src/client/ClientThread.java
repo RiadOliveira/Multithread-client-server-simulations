@@ -14,7 +14,7 @@ import src.server.ServerData;
 import src.utils.ConsoleOperationMessageOverwriter;
 
 public class ClientThread implements Runnable {
-  public static DTO currentDTOToSend;
+  public static DTO currentDTOToSend = null;
   private UUID idOfPreviousDTOToSend = null, idOfPreviousDTOReceived = null;
 
   private ObjectInputStream inputStream;
@@ -30,16 +30,14 @@ public class ClientThread implements Runnable {
 
   public void run() {
     try {
-      inputStream = new ObjectInputStream(serverSocket.getInputStream());
       outputStream = new ObjectOutputStream(serverSocket.getOutputStream());
-
-      MessageReceiverThread messageReceiverThread = new MessageReceiverThread(
-        connectedServer, inputStream
-      );
-      (new Thread(messageReceiverThread)).start();
+      inputStream = new ObjectInputStream(serverSocket.getInputStream());
 
       handleRecognitionCommunication();
-      while(!ClientProcess.getClientData().isFinished()) {
+      MessageReceiverThread messageReceiverThread = MessageReceiverThread.
+        GenerateAndStartMessageReceiverThread(connectedServer, inputStream);
+
+      while(!clientFinished()) {
         handleMessageSending();
         handleMessageReceiving(messageReceiverThread.readDTO());
       }
@@ -47,11 +45,16 @@ public class ClientThread implements Runnable {
       inputStream.close();
       outputStream.close();
     } catch(Exception exception) {
+      exception.printStackTrace();
       ConsoleOperationMessageOverwriter.print(
         exception instanceof AppException ?
         exception.getMessage() : "Erro interno do cliente!"
       );
     }
+  }
+
+  private synchronized boolean clientFinished() {
+    return ClientProcess.getClientData().isFinished();
   }
 
   private synchronized void handleRecognitionCommunication() throws AppException {
@@ -74,8 +77,8 @@ public class ClientThread implements Runnable {
     }
   }
 
-  private void handleMessageSending() {
-    if(alreadyUsedDTO(idOfPreviousDTOToSend, currentDTOToSend)) return;
+  private synchronized void handleMessageSending() {
+    if(alreadyUsedOrInvalidDTO(idOfPreviousDTOToSend, currentDTOToSend)) return;
     idOfPreviousDTOToSend = currentDTOToSend.getId();
     
     try {
@@ -90,7 +93,10 @@ public class ClientThread implements Runnable {
         receiverServer
       );
 
-      if(receiverIsConnectedServer || noThreadConnectedToServer) sendUnicastDTO();
+      if(receiverIsConnectedServer || noThreadConnectedToServer) {
+        outputStream.writeObject(currentDTOToSend);
+        ClientThread.currentDTOToSend = null;
+      }
     } catch (Exception exception) {
       ConsoleOperationMessageOverwriter.print(
         "Falha ao enviar a mensagem para " + 
@@ -107,26 +113,16 @@ public class ClientThread implements Runnable {
     return true;
   }
 
-  private synchronized void sendUnicastDTO() throws Exception {
-    if(currentDTOToSend == null) return;
-
-    outputStream.writeObject(currentDTOToSend);
-    currentDTOToSend = null;
-  }
-
   private void handleMessageReceiving(DTO receivedMessage) {
-    if(alreadyUsedDTO(idOfPreviousDTOReceived, receivedMessage)) return;
+    if(alreadyUsedOrInvalidDTO(idOfPreviousDTOReceived, receivedMessage)) return;
+
     idOfPreviousDTOReceived = receivedMessage.getId();
-
-    boolean isMessageForThisClient = receivedMessage.getReceiver().equals(
-      ClientProcess.getClientData().getName()
+    receivedMessage.print();
+    
+    boolean isMessageForThisClient = ClientProcess.getClientData().getName().equals(
+      receivedMessage.getReceiver()
     );
-    if(isMessageForThisClient) {
-      receivedMessage.print();
-      return;
-    }
-
-    handleMessageRedirect(receivedMessage);
+    if(!isMessageForThisClient) handleMessageRedirect(receivedMessage);
   }
 
   private void handleMessageRedirect(DTO receivedMessage) {
@@ -145,8 +141,8 @@ public class ClientThread implements Runnable {
     }
   }
 
-  private boolean alreadyUsedDTO(UUID idOfPreviousDTO, DTO currentDTO) {
-    return idOfPreviousDTO != null &&
-      idOfPreviousDTO.equals(currentDTO.getId());
+  private boolean alreadyUsedOrInvalidDTO(UUID idOfPreviousDTO, DTO currentDTO) {
+    if(currentDTO == null) return true;
+    return idOfPreviousDTO != null &&idOfPreviousDTO.equals(currentDTO.getId());
   }
 }

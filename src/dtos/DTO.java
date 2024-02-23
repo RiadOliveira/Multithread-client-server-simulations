@@ -1,11 +1,12 @@
 package src.dtos;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.UUID;
 
 import src.utils.ConsoleOperationMessageOverwriter;
 
-public class DTO {
+public class DTO implements Serializable {
   private UUID id;
   private DTOType type;
   private String message;
@@ -23,7 +24,7 @@ public class DTO {
   }
 
   public void print() {
-    ConsoleOperationMessageOverwriter.print("Dados do DTO:");
+    ConsoleOperationMessageOverwriter.print("Dados do DTO recebido:");
     printProperties();
   }
 
