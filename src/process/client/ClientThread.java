@@ -18,9 +18,7 @@ public class ClientThread extends AppThread {
 
   @Override
   protected void handleRecognitionCommunication() throws AppException {
-    ConsolePrinter.print(
-      "\nThread enviando mensagem de reconhecimento..."
-    );
+    ConsolePrinter.print("Thread enviando mensagem de reconhecimento...");
 
     try {
       String clientName = ClientProcess.getData().getName(); 
@@ -28,7 +26,7 @@ public class ClientThread extends AppThread {
 
       outputStream.writeObject(recognitionDTO);
       ConsolePrinter.print(
-        "Servidor " + getConnectedProcess() + " reconheceu o cliente com sucesso!"
+        "Servidor " + getConnectedProcess() + " reconheceu o cliente com sucesso!\n"
       );
     } catch (Exception exception) {
       throw new AppException("Erro ao enviar mensagem de reconhecimento!");

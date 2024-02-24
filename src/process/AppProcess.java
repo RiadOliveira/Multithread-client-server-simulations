@@ -21,7 +21,7 @@ public abstract class AppProcess {
   }
 
   protected static void handleOperationInput() {
-    while(ConsolePrinter.printingIsLocked());
+    while(ConsolePrinter.printingHasLocks());
 
     String operationData = scanner.nextLine();
     if(operationData.equalsIgnoreCase(Constants.EXIT_OPTION)) return;
@@ -52,7 +52,7 @@ public abstract class AppProcess {
       String receiver = getParsedReceiver(splittedOperationData[0]);
       String message = splittedOperationData[1];
       
-      ConsolePrinter.updatedPrintingLocks(true);
+      ConsolePrinter.updatedPrintingLocks(1);
       setCurrentDTOTOSend.accept(new DTO(message, processName, receiver));
     } catch (Exception exception) {
       if(exception instanceof AppException) throw exception;

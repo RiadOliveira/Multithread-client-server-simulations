@@ -23,10 +23,12 @@ public class ClientProcess extends AppProcess {
       List<Socket> serverSockets = new ArrayList<>(
         data.getServersToConnect().size()
       );
+      
       ConsolePrinter.print(
         "Cliente " + data.getName() +
         " iniciado, tentando conectar-se aos servidores..."
       );
+      ConsolePrinter.updatedPrintingLocks(data.getServersToConnect().size());
 
       for(ServerData serverData : data.getServersToConnect()) {
         Socket socket = connectToServerWithRetry(serverData);
@@ -34,7 +36,6 @@ public class ClientProcess extends AppProcess {
           new ClientThread(serverData.getName(), socket)
         );
 
-        ConsolePrinter.updatedPrintingLocks(true);
         serverSockets.add(socket);
         clientThread.start();
       }
@@ -52,7 +53,7 @@ public class ClientProcess extends AppProcess {
   private static Socket connectToServerWithRetry(ServerData serverData) {
     String serverName = serverData.getName();
     ConsolePrinter.print(
-      "\nTentando conectar-se ao servidor " + serverName + "..."
+      "Tentando conectar-se ao servidor " + serverName + "..."
     );
 
     Socket serverSocket = null;
@@ -65,7 +66,7 @@ public class ClientProcess extends AppProcess {
     }
     
     ConsolePrinter.print(
-      "Servidor " + serverName + " conectado com sucesso!"
+      "Servidor " + serverName + " conectado com sucesso!\n"
     );
     return serverSocket;
   }

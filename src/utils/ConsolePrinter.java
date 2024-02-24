@@ -7,72 +7,90 @@ import src.process.client.ClientProcess;
 import src.process.server.ServerProcess;
 
 public class ConsolePrinter {
-  private static String processName = null;
-
   private static final String clearConsoleString = "\033[H\033[2J";
-  private static final String clearCurrentLineString =
-    "\r" + " ".repeat(Constants.LENGTH_OF_OPERATION_MESSAGE) + "\r";
 
+  private static String operationMessageWithProcessName = null;
+  private static String clearCurrentLineString = null;
   private static int printingLocks = 0;
 
   public static synchronized void print(String content) {
     System.out.println(content);
   }
 
-  public static synchronized void printReinsertingOperationMessage(
-    String content
-  ) {
+  public static synchronized void printReinsertingOperationMessage(String content) {
+    initOperationMessagePropertiesWithProcessName();
     print(
       clearCurrentLineString + content +
-      "\n" + Constants.OPERATION_MESSAGE
+      "\n" + operationMessageWithProcessName
     );
   }
 
-  public static synchronized void printDTO(DTO dto, boolean isSending) {
+  public static synchronized void printSendingDTO(DTO dto, String intermediaryProcess) {
     if(dto == null) return;
 
-    String sender = dto.getSender();
     String receiver = dto.getReceiver();
-    String transmissionString = isSending ?
-      ("enviado (" + sender + " -> " + receiver + ")") :
-      ("recebido (" + receiver + " <- " + sender + ")");
+    String intermediaryProcessString = !intermediaryProcess.equals(receiver) ?
+    " por meio de " + intermediaryProcess : "";
 
+    String transmissionString = 
+      "enviado" + intermediaryProcessString + " (" + 
+      dto.getSender() + " -> " + receiver + ")";
+    printDTO(dto, transmissionString);
+  }
+
+  public static synchronized void printReceivingDTO(DTO dto) {
+    if(dto == null) return;
+
+    String transmissionString = 
+      "recebido (" + dto.getReceiver() + " <- " + dto.getSender() + ")";
+    printDTO(dto, transmissionString);
+  }
+
+  private static void printDTO(DTO dto, String transmissionString) {
     System.out.print(
       "\nDados do DTO " + transmissionString +
       ":\n" + dto.getPrintableString()
     );
   }
 
-  public static void clearConsole() {
+  public static synchronized void clearConsole() {
     System.out.print(clearConsoleString);  
     System.out.flush();  
   }
 
-  public static synchronized void updatedPrintingLocks(boolean increaseLocks) {
-    if(printingLocks == 0 && increaseLocks) {
+  public static synchronized void updatedPrintingLocks(int updateValue) {
+    if(printingLocks == 0 && updateValue > 0) {
+      initOperationMessagePropertiesWithProcessName();
       System.out.print(clearCurrentLineString);
     }
 
-    printingLocks = Math.max(0, printingLocks + (increaseLocks ? 1 : -1));
-    if(!printingIsLocked()) printOperationMessage();
+    printingLocks = Math.max(0, printingLocks + updateValue);
+    if(!printingHasLocks()) printOperationMessage();
   }
 
-  public static synchronized boolean printingIsLocked() {
+  public static synchronized boolean printingHasLocks() {
     return printingLocks > 0;
   }
 
   public static void printOperationMessage() {
-    initProcessName();
-    System.out.print("\n(" + processName + ") " + Constants.OPERATION_MESSAGE);
+    initOperationMessagePropertiesWithProcessName();
+    System.out.print(operationMessageWithProcessName);
   }
 
-  private static void initProcessName() {
-    if(processName != null) return;
+  private static void initOperationMessagePropertiesWithProcessName() {
+    if(operationMessageWithProcessName != null) return;
 
+    String processName;
     try {
       processName = ServerProcess.getData().getName();
     } catch (Exception exception) {
       processName = ClientProcess.getData().getName();
     }
+
+    operationMessageWithProcessName = 
+      "\n(" + processName + ") " + Constants.OPERATION_MESSAGE;
+
+    clearCurrentLineString = 
+      "\r" + " ".repeat(operationMessageWithProcessName.length()) + "\r";
   }
 }

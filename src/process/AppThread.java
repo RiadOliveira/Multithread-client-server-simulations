@@ -42,10 +42,10 @@ public abstract class AppThread implements Runnable {
         inputStream = new ObjectInputStream(connectedSocket.getInputStream());
       }
 
-      synchronized(this) {
+      synchronized(AppThread.class) {
         handleRecognitionCommunication();
-        ConsolePrinter.updatedPrintingLocks(false);
-      };
+        ConsolePrinter.updatedPrintingLocks(-1);
+      }
 
       MessageReceiverThread messageReceiverThread = MessageReceiverThread.
         GenerateAndStartMessageReceiverThread(getConnectedProcess(), inputStream);
@@ -72,17 +72,17 @@ public abstract class AppThread implements Runnable {
     String parsedReceiver = currentDTOToSend.getReceiver().toUpperCase();
     
     try {
-      sendCurrentDTO(parsedReceiver);
+      synchronized(AppThread.class) {sendCurrentDTO(parsedReceiver);}
     } catch (Exception exception) {
       ConsolePrinter.print(
         exception instanceof AppException ? exception.getMessage() :
         "Falha ao enviar a mensagem para " + parsedReceiver + "!"
       );
-      ConsolePrinter.updatedPrintingLocks(false);
+      ConsolePrinter.updatedPrintingLocks(-1);
     }
   }
 
-  private synchronized void sendCurrentDTO(String parsedReceiver) throws Exception {
+  private void sendCurrentDTO(String parsedReceiver) throws Exception {
     if(currentDTOToSend == null) return;
     if(parsedReceiver.equals(getProcessName())) {
       throw new AppException("O remetente deve ser diferente do receptor!");
@@ -93,32 +93,32 @@ public abstract class AppThread implements Runnable {
 
     if(isBroadcast || canSendUnicast) {
       outputStream.writeObject(currentDTOToSend);
-      ConsolePrinter.printDTO(currentDTOToSend, true);
+      ConsolePrinter.printSendingDTO(currentDTOToSend, getConnectedProcess());
     }
-    if(canSendUnicast) AppThread.currentDTOToSend = null;
+    if(canSendUnicast) currentDTOToSend = null;
 
-    ConsolePrinter.updatedPrintingLocks(false);
+    ConsolePrinter.updatedPrintingLocks(-1);
   }
 
   protected void handleDTOReceiving(DTO receivedDTO) {
     if(alreadyUsedOrInvalidDTO(idOfPreviousDTOReceived, receivedDTO)) return;
 
     idOfPreviousDTOReceived = receivedDTO.getId();
-    ConsolePrinter.printDTO(receivedDTO, false);
+    ConsolePrinter.printReceivingDTO(receivedDTO);
     
     boolean isMessageForThisProcess = getProcessName().equals(
       receivedDTO.getReceiver()
     );
     if(!isMessageForThisProcess) handleDTORedirect(receivedDTO);
 
-    ConsolePrinter.updatedPrintingLocks(false);
+    ConsolePrinter.updatedPrintingLocks(-1);
   }
 
   private synchronized void handleDTORedirect(DTO receivedDTO) {
     idOfPreviousDTOToSend = receivedDTO.getId();
     currentDTOToSend = receivedDTO;
 
-    ConsolePrinter.updatedPrintingLocks(true);
+    ConsolePrinter.updatedPrintingLocks(1);
     ConsolePrinter.print(
       "\nDTO sendo redirecionado para " +
       receivedDTO.getReceiver() + "!"

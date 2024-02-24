@@ -25,9 +25,7 @@ public class ServerThread extends AppThread {
 
   @Override
   protected void handleRecognitionCommunication() throws AppException {
-    ConsolePrinter.print(
-      "\nThread aguardando mensagem de reconhecimento..."
-    );
+    ConsolePrinter.print("Thread aguardando mensagem de reconhecimento...");
 
     try {
       DTO recognitionDTO = (DTO) inputStream.readObject();
@@ -36,7 +34,7 @@ public class ServerThread extends AppThread {
       connectedClients.add(recognitionDTO.getMessage());
 
       ConsolePrinter.print(
-        "Cliente " + getConnectedProcess() + " reconhecido com sucesso!"
+        "Cliente " + getConnectedProcess() + " reconhecido com sucesso!\n"
       );
     } catch (Exception exception) {
       throw new AppException("Erro ao ler mensagem de reconhecimento!");

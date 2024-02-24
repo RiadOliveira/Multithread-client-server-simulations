@@ -18,15 +18,13 @@ public class ServerProcess extends AppProcess {
     try {
       ServerSocket serverSocket = new ServerSocket(data.getPort());
       ConsolePrinter.print(
-        "Servidor " + data.getName() +
-        " iniciado, aguardando clientes..."
+        "Servidor " + data.getName() + " iniciado, aguardando clientes...\n"
       );
+      ConsolePrinter.updatedPrintingLocks(data.getquantityOfClientsToConnect());
 
       for(int ind=0; ind<data.getquantityOfClientsToConnect(); ind++) {
         Socket clientSocket = serverSocket.accept();
         Thread serverThread = new Thread(new ServerThread(clientSocket));
-        
-        ConsolePrinter.updatedPrintingLocks(true);
         serverThread.start();
       }
 
