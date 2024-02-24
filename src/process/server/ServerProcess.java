@@ -17,7 +17,10 @@ public class ServerProcess extends AppProcess {
   public static void run() {
     try {
       ServerSocket serverSocket = new ServerSocket(data.getPort());
-      ConsolePrinter.print("Servidor iniciado, aguardando clientes...");
+      ConsolePrinter.print(
+        "Servidor " + data.getName() +
+        " iniciado, aguardando clientes..."
+      );
 
       for(int ind=0; ind<data.getquantityOfClientsToConnect(); ind++) {
         Socket clientSocket = serverSocket.accept();

@@ -23,7 +23,6 @@ public abstract class AppProcess {
   protected static void handleOperationInput() {
     while(ConsolePrinter.printingIsLocked());
 
-    ConsolePrinter.printOperationMessage();
     String operationData = scanner.nextLine();
     if(operationData.equalsIgnoreCase(Constants.EXIT_OPTION)) return;
 
@@ -32,8 +31,10 @@ public abstract class AppProcess {
         Constants.CLEAR_CONSOLE_OPTION
       );
 
-      if(isClearOption) ConsolePrinter.clearConsole();
-      else executeSendingOperation(operationData);
+      if(isClearOption) {
+        ConsolePrinter.clearConsole();
+        ConsolePrinter.printOperationMessage();
+      } else executeSendingOperation(operationData);
     } catch (AppException exception) {
       ConsolePrinter.print(exception.getMessage());
     } finally {

@@ -1,6 +1,5 @@
 package src.process;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -108,26 +107,17 @@ public abstract class AppThread implements Runnable {
     if(!isMessageForThisProcess) handleDTORedirect(receivedDTO);
 
     ConsolePrinter.updatedPrintingLocks(false);
-    ConsolePrinter.printOperationMessage();
   }
 
-  private void handleDTORedirect(DTO receivedDTO) {
-    boolean canRedirectMessage = receivedDTO.getSender().equals(
-      getConnectedProcess()
-    );
-    if(canRedirectMessage) return;
+  private synchronized void handleDTORedirect(DTO receivedDTO) {
+    idOfPreviousDTOToSend = receivedDTO.getId();
+    currentDTOToSend = receivedDTO;
 
-    try {
-      outputStream.writeObject(receivedDTO);
-      ConsolePrinter.print(
-        "DTO redirecionado para " + getConnectedProcess() + "!"
-      );
-    } catch (IOException e) {
-      ConsolePrinter.print(
-        "Falha ao redirecionar a mensagem para " + 
-        receivedDTO.getReceiver() + "!"
-      );
-    }
+    ConsolePrinter.updatedPrintingLocks(true);
+    ConsolePrinter.print(
+      "\nDTO sendo redirecionado para " +
+      receivedDTO.getReceiver() + "!"
+    );
   }
 
   private boolean alreadyUsedOrInvalidDTO(UUID idOfPreviousDTO, DTO currentDTO) {

@@ -23,7 +23,10 @@ public class ClientProcess extends AppProcess {
       List<Socket> serverSockets = new ArrayList<>(
         data.getServersToConnect().size()
       );
-      ConsolePrinter.print("Cliente iniciado, tentando conectar-se aos servidores...");
+      ConsolePrinter.print(
+        "Cliente " + data.getName() +
+        " iniciado, tentando conectar-se aos servidores..."
+      );
 
       for(ServerData serverData : data.getServersToConnect()) {
         Socket socket = connectToServerWithRetry(serverData);

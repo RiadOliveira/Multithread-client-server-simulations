@@ -38,10 +38,6 @@ public class ConsolePrinter {
       ":\n" + dto.getPrintableString()
     );
   }
-  
-  public static void printOperationMessage() {
-    System.out.print("\n" + Constants.OPERATION_MESSAGE);
-  }
 
   public static void clearConsole() {
     System.out.print(clearConsoleString);  
@@ -54,9 +50,14 @@ public class ConsolePrinter {
     }
 
     printingLocks = Math.max(0, printingLocks + (increaseLocks ? 1 : -1));
+    if(!printingIsLocked()) printOperationMessage();
   }
 
   public static synchronized boolean printingIsLocked() {
     return printingLocks > 0;
+  }
+
+  public static void printOperationMessage() {
+    System.out.print("\n" + Constants.OPERATION_MESSAGE);
   }
 }
