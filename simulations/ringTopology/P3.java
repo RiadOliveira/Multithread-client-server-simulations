@@ -10,7 +10,7 @@ public class P3 {
     try {
       ServerData data = new ServerData(
         "P3", InetAddress.getLocalHost().getHostAddress(),
-        33333, 2
+        33333, 1
       );
 
       ServerProcess.init(data);

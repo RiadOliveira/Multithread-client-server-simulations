@@ -5,6 +5,7 @@ import src.constants.Constants;
 import src.dtos.DTO;
 
 public class ConsolePrinter {
+  private static final String clearConsoleString = "\033[H\033[2J";
   private static final String clearCurrentLineString =
     "\r" + " ".repeat(Constants.LENGTH_OF_OPERATION_MESSAGE) + "\r";
 
@@ -40,6 +41,11 @@ public class ConsolePrinter {
   
   public static void printOperationMessage() {
     System.out.print("\n" + Constants.OPERATION_MESSAGE);
+  }
+
+  public static void clearConsole() {
+    System.out.print(clearConsoleString);  
+    System.out.flush();  
   }
 
   public static synchronized void updatedPrintingLocks(boolean increaseLocks) {

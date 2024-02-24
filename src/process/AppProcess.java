@@ -28,7 +28,12 @@ public abstract class AppProcess {
     if(operationData.equalsIgnoreCase(Constants.EXIT_OPTION)) return;
 
     try {
-      executeReceivedOperation(operationData);
+      boolean isClearOption = operationData.equalsIgnoreCase(
+        Constants.CLEAR_CONSOLE_OPTION
+      );
+
+      if(isClearOption) ConsolePrinter.clearConsole();
+      else executeSendingOperation(operationData);
     } catch (AppException exception) {
       ConsolePrinter.print(exception.getMessage());
     } finally {
@@ -36,7 +41,7 @@ public abstract class AppProcess {
     }
   }
 
-  private static void executeReceivedOperation(
+  private static void executeSendingOperation(
     String operationData
   ) throws AppException {
     String splittedOperationData[] = operationData.split(";");
