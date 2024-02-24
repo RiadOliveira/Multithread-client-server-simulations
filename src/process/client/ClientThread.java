@@ -6,7 +6,7 @@ import src.dtos.DTO;
 import src.error.AppException;
 import src.process.AppThread;
 import src.process.server.ServerData;
-import src.utils.ConsoleOperationMessageOverwriter;
+import src.utils.ConsolePrinter;
 
 public class ClientThread extends AppThread {
   private final String connectedServer;
@@ -18,17 +18,17 @@ public class ClientThread extends AppThread {
 
   @Override
   protected void handleRecognitionCommunication() throws AppException {
-    ConsoleOperationMessageOverwriter.print(
-      "Thread enviando mensagem de reconhecimento..."
+    ConsolePrinter.print(
+      "\nThread enviando mensagem de reconhecimento..."
     );
 
     try {
-      String clientName = ClientProcess.getClientData().getName(); 
+      String clientName = ClientProcess.getData().getName(); 
       DTO recognitionDTO = new DTO(clientName, clientName, connectedServer);
 
       outputStream.writeObject(recognitionDTO);
-      ConsoleOperationMessageOverwriter.print(
-        "Servidor " + connectedServer + " reconheceu o cliente com sucesso!"
+      ConsolePrinter.print(
+        "Servidor " + getConnectedProcess() + " reconheceu o cliente com sucesso!"
       );
     } catch (Exception exception) {
       throw new AppException("Erro ao enviar mensagem de reconhecimento!");
@@ -46,7 +46,7 @@ public class ClientThread extends AppThread {
   }
 
   private boolean noThreadConnectedToReceiverServer(String receiverServer) {
-    for(ServerData data : ClientProcess.getClientData().getServersToConnect()) {
+    for(ServerData data : ClientProcess.getData().getServersToConnect()) {
       if(data.getName().equals(receiverServer)) return false;
     }
 
@@ -56,8 +56,13 @@ public class ClientThread extends AppThread {
   @Override
   protected boolean processFinished() {
     synchronized(this) {
-      return ClientProcess.getClientData().isFinished();
+      return ClientProcess.getData().isFinished();
     }
+  }
+
+  @Override
+  protected String getProcessName() {
+    return ClientProcess.getData().getName();
   }
 
   @Override

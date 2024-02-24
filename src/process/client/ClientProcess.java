@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import src.process.AppProcess;
 import src.process.server.ServerData;
-import src.utils.ConsoleOperationMessageOverwriter;
+import src.utils.ConsolePrinter;
 
 public class ClientProcess extends AppProcess {
   private static ClientData data;
@@ -23,6 +23,7 @@ public class ClientProcess extends AppProcess {
       List<Socket> serverSockets = new ArrayList<>(
         data.getServersToConnect().size()
       );
+      ConsolePrinter.print("Cliente iniciado, tentando conectar-se aos servidores...");
 
       for(ServerData serverData : data.getServersToConnect()) {
         Socket socket = connectToServerWithRetry(serverData);
@@ -30,6 +31,7 @@ public class ClientProcess extends AppProcess {
           new ClientThread(serverData.getName(), socket)
         );
 
+        ConsolePrinter.updatedPrintingLocks(true);
         serverSockets.add(socket);
         clientThread.start();
       }
@@ -40,14 +42,14 @@ public class ClientProcess extends AppProcess {
       scanner.close();
       data.setFinished(true);
     } catch (Exception exception) {
-      exception.printStackTrace();
+      ConsolePrinter.print("Erro interno do cliente!");
     }
   }
 
   private static Socket connectToServerWithRetry(ServerData serverData) {
     String serverName = serverData.getName();
-    ConsoleOperationMessageOverwriter.print(
-      "Tentando conectar-se ao servidor " + serverName + " ..."
+    ConsolePrinter.print(
+      "\nTentando conectar-se ao servidor " + serverName + "..."
     );
 
     Socket serverSocket = null;
@@ -59,29 +61,29 @@ public class ClientProcess extends AppProcess {
       }
     }
     
-    ConsoleOperationMessageOverwriter.print(
+    ConsolePrinter.print(
       "Servidor " + serverName + " conectado com sucesso!"
     );
     return serverSocket;
   }
 
   private static void waitToReconnect(String serverName) {
-    ConsoleOperationMessageOverwriter.print(
+    ConsolePrinter.print(
       "Falha ao conectar-se ao servidor " + serverName +
       ", tentando novamente em " + WAIT_TIME_TO_TRY_RECONNECTION +
-      " segundos ..."
+      " segundos..."
     );
 
     try {
       TimeUnit.SECONDS.sleep(WAIT_TIME_TO_TRY_RECONNECTION);
     } catch (Exception exception) {
-      ConsoleOperationMessageOverwriter.print(
+      ConsolePrinter.print(
         "Falha ao esperar para tentar conectar-se ao servidor!"
       );
     }
   }
 
-  public static ClientData getClientData() {
+  public static ClientData getData() {
     return data;
   }
 }

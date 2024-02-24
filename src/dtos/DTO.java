@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.UUID;
 
-import src.utils.ConsoleOperationMessageOverwriter;
+import src.utils.ConsolePrinter;
 
 public class DTO implements Serializable {
   private UUID id;
@@ -20,22 +20,20 @@ public class DTO implements Serializable {
     this.receiver = receiver;
   }
 
-  public void print() {
-    System.out.println("Dados do DTO recebido:");
-    printProperties();
-    ConsoleOperationMessageOverwriter.print("");
-  }
-
-  private void printProperties() {
+  public String getPrintableString() {
+    String printableString = "";
     Field[] fields = DTO.class.getDeclaredFields();
 
     try {
       for(Field field : fields) {
         Object value = field.get(this).toString();
-        System.out.println("  " + field.getName() + ": " + value);
+        printableString += "  " + field.getName() + ": " + value + "\n";
       }
+
+      return printableString;
     } catch (Exception exception) {
-      exception.printStackTrace();
+      ConsolePrinter.print("Falha ao exibir dados do DTO!");
+      return null;
     }
   }
 

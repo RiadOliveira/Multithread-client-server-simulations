@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import src.constants.Constants;
 import src.dtos.DTO;
 import src.error.AppException;
-import src.utils.ConsoleOperationMessageOverwriter;
+import src.utils.ConsolePrinter;
 
 public abstract class AppProcess {
   protected static final Scanner scanner = new Scanner(System.in);
@@ -21,14 +21,16 @@ public abstract class AppProcess {
   }
 
   protected static void handleOperationInput() {
-    ConsoleOperationMessageOverwriter.print("");
+    while(ConsolePrinter.printingIsLocked());
+
+    ConsolePrinter.printOperationMessage();
     String operationData = scanner.nextLine();
     if(operationData.equalsIgnoreCase(Constants.EXIT_OPTION)) return;
 
     try {
       executeReceivedOperation(operationData);
     } catch (AppException exception) {
-      System.out.println(exception.getMessage());
+      ConsolePrinter.print(exception.getMessage());
     } finally {
       handleOperationInput();
     }
@@ -43,6 +45,7 @@ public abstract class AppProcess {
       String receiver = getParsedReceiver(splittedOperationData[0]);
       String message = splittedOperationData[1];
       
+      ConsolePrinter.updatedPrintingLocks(true);
       setCurrentDTOTOSend.accept(new DTO(message, processName, receiver));
     } catch (Exception exception) {
       if(exception instanceof AppException) throw exception;

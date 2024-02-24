@@ -4,7 +4,7 @@ import java.io.ObjectInputStream;
 
 import src.dtos.DTO;
 import src.error.AppException;
-import src.utils.ConsoleOperationMessageOverwriter;
+import src.utils.ConsolePrinter;
 
 public class MessageReceiverThread implements Runnable {
   private final String connectedProcess;
@@ -34,16 +34,17 @@ public class MessageReceiverThread implements Runnable {
 
   @Override
   public void run() {
+    String disconnectMessage = "Processo desconectou-se de " + connectedProcess + "!";
+
     try {
       while(inputStream != null) tryToReadInputStream();
+      ConsolePrinter.printReinsertingOperationMessage(disconnectMessage);
     } catch (Exception exception) {
-      ConsoleOperationMessageOverwriter.print(
-        exception instanceof AppException ?
-        exception.getMessage() : "Erro interno do cliente!"
-      );
-    } finally {
-      ConsoleOperationMessageOverwriter.print(
-        "Processo desconectou-se de " + connectedProcess + "!"
+      String errorMessage = exception instanceof AppException ?
+        exception.getMessage() : "Erro interno do processo!";
+
+      ConsolePrinter.printReinsertingOperationMessage(
+        errorMessage + "\n" + disconnectMessage
       );
     }
   }
@@ -51,6 +52,7 @@ public class MessageReceiverThread implements Runnable {
   private void tryToReadInputStream() throws AppException {
     try {
       currentDTORead = (DTO) inputStream.readObject();
+      if(currentDTORead != null) ConsolePrinter.updatedPrintingLocks(true);
     } catch (Exception e) {
       throw new AppException(
         "Falha na leitura da mensagem de " +

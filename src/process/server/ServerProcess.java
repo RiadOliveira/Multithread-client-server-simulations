@@ -4,6 +4,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import src.process.AppProcess;
+import src.utils.ConsolePrinter;
 
 public class ServerProcess extends AppProcess {
   private static ServerData data;
@@ -16,11 +17,13 @@ public class ServerProcess extends AppProcess {
   public static void run() {
     try {
       ServerSocket serverSocket = new ServerSocket(data.getPort());
-      System.out.println("Servidor iniciado, aguardando clientes...");
+      ConsolePrinter.print("Servidor iniciado, aguardando clientes...");
 
       for(int ind=0; ind<data.getquantityOfClientsToConnect(); ind++) {
         Socket clientSocket = serverSocket.accept();
         Thread serverThread = new Thread(new ServerThread(clientSocket));
+        
+        ConsolePrinter.updatedPrintingLocks(true);
         serverThread.start();
       }
 
@@ -30,11 +33,11 @@ public class ServerProcess extends AppProcess {
       scanner.close();
       data.setClosed(true);
     } catch (Exception exception) {
-      System.out.println("Erro interno do servidor!");
+      ConsolePrinter.print("Erro interno do servidor!");
     }
   }
 
-  public static ServerData getServerData() {
+  public static ServerData getData() {
     return data;
   }
 }

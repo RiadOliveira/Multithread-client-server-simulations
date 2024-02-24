@@ -7,7 +7,7 @@ import java.util.List;
 import src.dtos.DTO;
 import src.error.AppException;
 import src.process.AppThread;
-import src.utils.ConsoleOperationMessageOverwriter;
+import src.utils.ConsolePrinter;
 
 public class ServerThread extends AppThread {
   private static List<String> connectedClients;
@@ -18,15 +18,15 @@ public class ServerThread extends AppThread {
 
     if(connectedClients == null) {
       connectedClients = new ArrayList<String>(
-        ServerProcess.getServerData().getquantityOfClientsToConnect()
+        ServerProcess.getData().getquantityOfClientsToConnect()
       );
     };
   }
 
   @Override
   protected void handleRecognitionCommunication() throws AppException {
-    ConsoleOperationMessageOverwriter.print(
-      "Thread aguardando mensagem de reconhecimento..."
+    ConsolePrinter.print(
+      "\nThread aguardando mensagem de reconhecimento..."
     );
 
     try {
@@ -35,12 +35,10 @@ public class ServerThread extends AppThread {
       connectedClientIndex = connectedClients.size();
       connectedClients.add(recognitionDTO.getMessage());
 
-      ConsoleOperationMessageOverwriter.print(
-        "Cliente " + connectedClients.get(connectedClientIndex) +
-        " reconhecido com sucesso!"
+      ConsolePrinter.print(
+        "Cliente " + getConnectedProcess() + " reconhecido com sucesso!"
       );
     } catch (Exception exception) {
-      exception.printStackTrace();
       throw new AppException("Erro ao ler mensagem de reconhecimento!");
     }
   }
@@ -57,8 +55,13 @@ public class ServerThread extends AppThread {
   @Override
   protected boolean processFinished() {
     synchronized(this) {
-      return ServerProcess.getServerData().isClosed();
+      return ServerProcess.getData().isClosed();
     }
+  }
+
+  @Override
+  protected String getProcessName() {
+    return ServerProcess.getData().getName();
   }
 
   @Override

@@ -9,8 +9,7 @@ import java.util.UUID;
 import src.constants.Constants;
 import src.dtos.DTO;
 import src.error.AppException;
-import src.process.client.ClientProcess;
-import src.utils.ConsoleOperationMessageOverwriter;
+import src.utils.ConsolePrinter;
 
 public abstract class AppThread implements Runnable {
   protected static DTO currentDTOToSend = null;
@@ -25,6 +24,7 @@ public abstract class AppThread implements Runnable {
   protected abstract void handleRecognitionCommunication() throws AppException;
   protected abstract boolean canSendUnicastToReceiver(String receiver);
   protected abstract boolean processFinished();
+  protected abstract String getProcessName();
   protected abstract String getConnectedProcess();
 
   public AppThread(
@@ -44,7 +44,11 @@ public abstract class AppThread implements Runnable {
         inputStream = new ObjectInputStream(connectedSocket.getInputStream());
       }
 
-      synchronized(this) {handleRecognitionCommunication();};
+      synchronized(this) {
+        handleRecognitionCommunication();
+        ConsolePrinter.updatedPrintingLocks(false);
+      };
+
       MessageReceiverThread messageReceiverThread = MessageReceiverThread.
         GenerateAndStartMessageReceiverThread(getConnectedProcess(), inputStream);
 
@@ -56,7 +60,7 @@ public abstract class AppThread implements Runnable {
       inputStream.close();
       outputStream.close();
     } catch(Exception exception) {
-      ConsoleOperationMessageOverwriter.print(
+      ConsolePrinter.print(
         exception instanceof AppException ?
         exception.getMessage() : "Erro interno do processo!"
       );
@@ -70,15 +74,25 @@ public abstract class AppThread implements Runnable {
     String receiver = currentDTOToSend.getReceiver().toUpperCase();
     
     try {
+      if(receiver.equals(getProcessName())) {
+        throw new AppException("O remetente deve ser diferente do receptor!");
+      }
+
       boolean isBroadcast = receiver.equals(Constants.BROADCAST_RECEIVER);
       boolean canSendUnicast = canSendUnicastToReceiver(receiver);
 
-      if(isBroadcast || canSendUnicast) outputStream.writeObject(currentDTOToSend);
+      if(isBroadcast || canSendUnicast) {
+        outputStream.writeObject(currentDTOToSend);
+        ConsolePrinter.printDTO(currentDTOToSend, true);
+      }
       if(canSendUnicast) AppThread.currentDTOToSend = null;
     } catch (Exception exception) {
-      ConsoleOperationMessageOverwriter.print(
+      ConsolePrinter.print(
+        exception instanceof AppException ? exception.getMessage() :
         "Falha ao enviar a mensagem para " + receiver + "!"
       );
+    } finally {
+      ConsolePrinter.updatedPrintingLocks(false);
     }
   }
 
@@ -86,12 +100,15 @@ public abstract class AppThread implements Runnable {
     if(alreadyUsedOrInvalidDTO(idOfPreviousDTOReceived, receivedDTO)) return;
 
     idOfPreviousDTOReceived = receivedDTO.getId();
-    receivedDTO.print();
+    ConsolePrinter.printDTO(receivedDTO, false);
     
-    boolean isMessageForThisProcess = ClientProcess.getClientData().getName().equals(
+    boolean isMessageForThisProcess = getProcessName().equals(
       receivedDTO.getReceiver()
     );
     if(!isMessageForThisProcess) handleDTORedirect(receivedDTO);
+
+    ConsolePrinter.updatedPrintingLocks(false);
+    ConsolePrinter.printOperationMessage();
   }
 
   private void handleDTORedirect(DTO receivedDTO) {
@@ -102,8 +119,11 @@ public abstract class AppThread implements Runnable {
 
     try {
       outputStream.writeObject(receivedDTO);
+      ConsolePrinter.print(
+        "DTO redirecionado para " + getConnectedProcess() + "!"
+      );
     } catch (IOException e) {
-      ConsoleOperationMessageOverwriter.print(
+      ConsolePrinter.print(
         "Falha ao redirecionar a mensagem para " + 
         receivedDTO.getReceiver() + "!"
       );
