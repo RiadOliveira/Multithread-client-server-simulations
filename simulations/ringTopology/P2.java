@@ -4,9 +4,9 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import src.client.ClientData;
-import src.client.ClientProcess;
-import src.server.ServerData;
+import src.process.client.ClientData;
+import src.process.client.ClientProcess;
+import src.process.server.ServerData;
 
 public class P2 {
   public static void main(String[] args) {
@@ -15,7 +15,7 @@ public class P2 {
 
       List<ServerData> serversToConnect = new ArrayList<>();
       serversToConnect.add(new ServerData("P1", serversIp, 11111));
-      serversToConnect.add(new ServerData("P3", serversIp, 33333));
+      //serversToConnect.add(new ServerData("P3", serversIp, 33333));
       
       ClientData data = new ClientData("P2", serversToConnect);
       ClientProcess.init(data);

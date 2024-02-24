@@ -1,29 +1,21 @@
-package src.client;
+package src.process.client;
 
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import src.constants.Constants;
-import src.dtos.DTO;
-import src.dtos.DTOType;
-import src.error.AppException;
-import src.server.ServerData;
+import src.process.AppProcess;
+import src.process.server.ServerData;
 import src.utils.ConsoleOperationMessageOverwriter;
 
-public class ClientProcess {
-  private static final Scanner scanner = new Scanner(System.in);
-  private static final int WAIT_TIME_TO_TRY_RECONNECTION = 5;
+public class ClientProcess extends AppProcess {
   private static ClientData data;
+  private static final int WAIT_TIME_TO_TRY_RECONNECTION = 5;
   
   public static void init(ClientData data) {
+    AppProcess.init(data.getName(), ClientThread::setCurrentDTOTOSend);
     ClientProcess.data = data;
-  }
-
-  public static ClientData getClientData() {
-    return data;
   }
 
   public static void run() {
@@ -89,49 +81,7 @@ public class ClientProcess {
     }
   }
 
-  private static void handleOperationInput() {
-    ConsoleOperationMessageOverwriter.print("");
-    String operationData = scanner.nextLine();
-    if(operationData.equalsIgnoreCase(Constants.EXIT_OPTION)) return;
-
-    try {
-      executeReceivedOperation(operationData);
-    } catch (AppException exception) {
-      System.out.println(exception.getMessage());
-    } finally {
-      handleOperationInput();
-    }
-  }
-
-  private static void executeReceivedOperation(
-    String operationData
-  ) throws AppException {
-    String splittedOperationData[] = operationData.split(";");
-    DTOType type = extractTypeFromSplittedOperationData(
-      splittedOperationData[0]
-    );
-    boolean isUnicast = type.equals(DTOType.UNICAST);
-    
-    try {
-      String receiver = isUnicast ? splittedOperationData[1] : null;
-      String message = splittedOperationData[isUnicast ? 2 : 1];
-      
-      ClientThread.currentDTOToSend = new DTO(
-        type, message, data.getName(), receiver
-      );
-    } catch (Exception exception) {
-      if(exception instanceof AppException) throw exception;
-      throw new AppException("Erro na entrada de dados. Tente outra vez!");
-    }
-  }
-
-  private static DTOType extractTypeFromSplittedOperationData(
-    String typeAsString
-  ) throws AppException {
-    String parsedType = typeAsString.trim().toUpperCase();
-
-    if(parsedType.startsWith("U")) return DTOType.UNICAST;
-    if(parsedType.startsWith("B")) return DTOType.BROADCAST;
-    throw new AppException("Tipo de mensagem inválido!");
+  public static ClientData getClientData() {
+    return data;
   }
 }

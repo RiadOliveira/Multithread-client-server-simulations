@@ -1,8 +1,8 @@
-package src.client;
+package src.process.client;
 
 import java.util.List;
 
-import src.server.ServerData;
+import src.process.server.ServerData;
 
 public class ClientData {
   private final String name;

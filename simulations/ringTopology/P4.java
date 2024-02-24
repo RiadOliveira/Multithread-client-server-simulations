@@ -4,9 +4,9 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import src.client.ClientData;
-import src.client.ClientProcess;
-import src.server.ServerData;
+import src.process.client.ClientData;
+import src.process.client.ClientProcess;
+import src.process.server.ServerData;
 
 public class P4 {
   public static void main(String[] args) {

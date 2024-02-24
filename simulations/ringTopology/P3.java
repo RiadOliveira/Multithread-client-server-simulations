@@ -2,8 +2,8 @@ package simulations.ringTopology;
 
 import java.net.InetAddress;
 
-import src.server.ServerData;
-import src.server.ServerProcess;
+import src.process.server.ServerData;
+import src.process.server.ServerProcess;
 
 public class P3 {
   public static void main(String[] args) {

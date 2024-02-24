@@ -1,4 +1,4 @@
-package src.server;
+package src.process.server;
 
 public class ServerData {
   private final String name, ip;
