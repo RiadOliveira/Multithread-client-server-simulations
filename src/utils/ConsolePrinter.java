@@ -3,8 +3,12 @@ package src.utils;
 import java.lang.Math;
 import src.constants.Constants;
 import src.dtos.DTO;
+import src.process.client.ClientProcess;
+import src.process.server.ServerProcess;
 
 public class ConsolePrinter {
+  private static String processName = null;
+
   private static final String clearConsoleString = "\033[H\033[2J";
   private static final String clearCurrentLineString =
     "\r" + " ".repeat(Constants.LENGTH_OF_OPERATION_MESSAGE) + "\r";
@@ -58,6 +62,17 @@ public class ConsolePrinter {
   }
 
   public static void printOperationMessage() {
-    System.out.print("\n" + Constants.OPERATION_MESSAGE);
+    initProcessName();
+    System.out.print("\n(" + processName + ") " + Constants.OPERATION_MESSAGE);
+  }
+
+  private static void initProcessName() {
+    if(processName != null) return;
+
+    try {
+      processName = ServerProcess.getData().getName();
+    } catch (Exception exception) {
+      processName = ClientProcess.getData().getName();
+    }
   }
 }

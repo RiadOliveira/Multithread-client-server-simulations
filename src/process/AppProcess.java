@@ -37,6 +37,7 @@ public abstract class AppProcess {
       } else executeSendingOperation(operationData);
     } catch (AppException exception) {
       ConsolePrinter.print(exception.getMessage());
+      ConsolePrinter.printOperationMessage();
     } finally {
       handleOperationInput();
     }

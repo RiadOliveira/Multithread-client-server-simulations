@@ -12,12 +12,13 @@ import src.utils.ConsolePrinter;
 
 public abstract class AppThread implements Runnable {
   protected static DTO currentDTOToSend = null;
-  protected UUID idOfPreviousDTOToSend = null, idOfPreviousDTOReceived = null;
+  protected static UUID idOfPreviousDTOReceived = null;
+  protected UUID idOfPreviousDTOToSend = null;
 
   protected ObjectInputStream inputStream;
   protected ObjectOutputStream outputStream;
 
-  protected final boolean initializeInputStreamFirstOnRun;
+  protected final boolean isServerThread;
   protected final Socket connectedSocket;
 
   protected abstract void handleRecognitionCommunication() throws AppException;
@@ -26,16 +27,14 @@ public abstract class AppThread implements Runnable {
   protected abstract String getProcessName();
   protected abstract String getConnectedProcess();
 
-  public AppThread(
-    Socket connectedSocket, boolean initializeInputStreamFirstOnRun
-  ) {
+  public AppThread(Socket connectedSocket, boolean isServerThread) {
     this.connectedSocket = connectedSocket;
-    this.initializeInputStreamFirstOnRun = initializeInputStreamFirstOnRun;
+    this.isServerThread = isServerThread;
   }
 
   public void run() {
     try {
-      if(initializeInputStreamFirstOnRun) {
+      if(isServerThread) {
         inputStream = new ObjectInputStream(connectedSocket.getInputStream());
         outputStream = new ObjectOutputStream(connectedSocket.getOutputStream());
       } else {
@@ -66,33 +65,39 @@ public abstract class AppThread implements Runnable {
     }
   }
 
-  protected synchronized void handleDTOSending() {
+  protected void handleDTOSending() {
     if(alreadyUsedOrInvalidDTO(idOfPreviousDTOToSend, currentDTOToSend)) return;
 
     idOfPreviousDTOToSend = currentDTOToSend.getId();
-    String receiver = currentDTOToSend.getReceiver().toUpperCase();
+    String parsedReceiver = currentDTOToSend.getReceiver().toUpperCase();
     
     try {
-      if(receiver.equals(getProcessName())) {
-        throw new AppException("O remetente deve ser diferente do receptor!");
-      }
-
-      boolean isBroadcast = receiver.equals(Constants.BROADCAST_RECEIVER);
-      boolean canSendUnicast = canSendUnicastToReceiver(receiver);
-
-      if(isBroadcast || canSendUnicast) {
-        outputStream.writeObject(currentDTOToSend);
-        ConsolePrinter.printDTO(currentDTOToSend, true);
-      }
-      if(canSendUnicast) AppThread.currentDTOToSend = null;
+      sendCurrentDTO(parsedReceiver);
     } catch (Exception exception) {
       ConsolePrinter.print(
         exception instanceof AppException ? exception.getMessage() :
-        "Falha ao enviar a mensagem para " + receiver + "!"
+        "Falha ao enviar a mensagem para " + parsedReceiver + "!"
       );
-    } finally {
       ConsolePrinter.updatedPrintingLocks(false);
     }
+  }
+
+  private synchronized void sendCurrentDTO(String parsedReceiver) throws Exception {
+    if(currentDTOToSend == null) return;
+    if(parsedReceiver.equals(getProcessName())) {
+      throw new AppException("O remetente deve ser diferente do receptor!");
+    }
+
+    boolean isBroadcast = parsedReceiver.equals(Constants.BROADCAST_RECEIVER);
+    boolean canSendUnicast = canSendUnicastToReceiver(parsedReceiver);
+
+    if(isBroadcast || canSendUnicast) {
+      outputStream.writeObject(currentDTOToSend);
+      ConsolePrinter.printDTO(currentDTOToSend, true);
+    }
+    if(canSendUnicast) AppThread.currentDTOToSend = null;
+
+    ConsolePrinter.updatedPrintingLocks(false);
   }
 
   protected void handleDTOReceiving(DTO receivedDTO) {
