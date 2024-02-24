@@ -25,28 +25,18 @@ public class ConsolePrinter {
     );
   }
 
-  public static synchronized void printSendingDTO(DTO dto, String intermediaryProcess) {
+  public static synchronized void printDTO(DTO dto, String intermediaryProcess, boolean isSending) {
     if(dto == null) return;
 
     String receiver = dto.getReceiver();
+    String transmissionWord = isSending ? "enviado" : "recebido";
     String intermediaryProcessString = !intermediaryProcess.equals(receiver) ?
-    " por meio de " + intermediaryProcess : "";
+      " por meio de " + intermediaryProcess : "";
 
     String transmissionString = 
-      "enviado" + intermediaryProcessString + " (" + 
+      transmissionWord + intermediaryProcessString + " (" + 
       dto.getSender() + " -> " + receiver + ")";
-    printDTO(dto, transmissionString);
-  }
 
-  public static synchronized void printReceivingDTO(DTO dto) {
-    if(dto == null) return;
-
-    String transmissionString = 
-      "recebido (" + dto.getReceiver() + " <- " + dto.getSender() + ")";
-    printDTO(dto, transmissionString);
-  }
-
-  private static void printDTO(DTO dto, String transmissionString) {
     System.out.print(
       "\nDados do DTO " + transmissionString +
       ":\n" + dto.getPrintableString()

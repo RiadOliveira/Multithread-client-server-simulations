@@ -52,7 +52,6 @@ public class MessageReceiverThread implements Runnable {
   private void tryToReadInputStream() throws AppException {
     try {
       currentDTORead = (DTO) inputStream.readObject();
-      if(currentDTORead != null) ConsolePrinter.updatedPrintingLocks(1);
     } catch (Exception e) {
       throw new AppException(
         "Falha na leitura da mensagem de " +

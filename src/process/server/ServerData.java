@@ -35,7 +35,7 @@ public class ServerData {
     return port;
   }
 
-  public int getquantityOfClientsToConnect() {
+  public int getQuantityOfClientsToConnect() {
     return quantityOfClientsToConnect;
   }
 

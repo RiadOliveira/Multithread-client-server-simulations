@@ -18,7 +18,7 @@ public class ServerThread extends AppThread {
 
     if(connectedClients == null) {
       connectedClients = new ArrayList<String>(
-        ServerProcess.getData().getquantityOfClientsToConnect()
+        ServerProcess.getData().getQuantityOfClientsToConnect()
       );
     };
   }
@@ -52,9 +52,7 @@ public class ServerThread extends AppThread {
 
   @Override
   protected boolean processFinished() {
-    synchronized(this) {
-      return ServerProcess.getData().isClosed();
-    }
+    return ServerProcess.getData().isClosed();
   }
 
   @Override

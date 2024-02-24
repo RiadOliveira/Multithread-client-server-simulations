@@ -11,10 +11,12 @@ import src.utils.ConsolePrinter;
 
 public class ClientProcess extends AppProcess {
   private static ClientData data;
-  private static final int WAIT_TIME_TO_TRY_RECONNECTION = 5;
+  private static final int WAIT_TIME_TO_TRY_RECONNECTION = 3;
   
   public static void init(ClientData data) {
-    AppProcess.init(data.getName(), ClientThread::setCurrentDTOTOSend);
+    AppProcess.init(
+      data.getName(), ClientThread::setCurrentDTOTOSend
+    );
     ClientProcess.data = data;
   }
 
@@ -89,5 +91,9 @@ public class ClientProcess extends AppProcess {
 
   public static ClientData getData() {
     return data;
+  }
+
+  protected static int getThreadsQuantity() {
+    return data.getServersToConnect().size();
   }
 }

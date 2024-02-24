@@ -12,8 +12,7 @@ import src.utils.ConsolePrinter;
 
 public abstract class AppThread implements Runnable {
   protected static DTO currentDTOToSend = null;
-  protected static UUID idOfPreviousDTOReceived = null;
-  protected UUID idOfPreviousDTOToSend = null;
+  protected static UUID idOfPreviousDTOToSend = null, idOfPreviousDTOReceived = null;
 
   protected ObjectInputStream inputStream;
   protected ObjectOutputStream outputStream;
@@ -85,37 +84,40 @@ public abstract class AppThread implements Runnable {
   private void sendCurrentDTO(String parsedReceiver) throws Exception {
     if(currentDTOToSend == null) return;
     if(parsedReceiver.equals(getProcessName())) {
-      throw new AppException("O remetente deve ser diferente do receptor!");
+      throw new AppException("O receptor deve ser outro processo!");
     }
-
+    
     boolean isBroadcast = parsedReceiver.equals(Constants.BROADCAST_RECEIVER);
     boolean canSendUnicast = canSendUnicastToReceiver(parsedReceiver);
-
     if(isBroadcast || canSendUnicast) {
       outputStream.writeObject(currentDTOToSend);
-      ConsolePrinter.printSendingDTO(currentDTOToSend, getConnectedProcess());
+      ConsolePrinter.printDTO(currentDTOToSend, getConnectedProcess(), true);
+      currentDTOToSend = null;
     }
-    if(canSendUnicast) currentDTOToSend = null;
 
     ConsolePrinter.updatedPrintingLocks(-1);
   }
-
+  
   protected void handleDTOReceiving(DTO receivedDTO) {
-    if(alreadyUsedOrInvalidDTO(idOfPreviousDTOReceived, receivedDTO)) return;
+    boolean dtoAlreadyReceived = alreadyUsedOrInvalidDTO(idOfPreviousDTOReceived, receivedDTO);
+    boolean dtoAlreadyRedirected = alreadyUsedOrInvalidDTO(idOfPreviousDTOToSend, receivedDTO);
+    if(dtoAlreadyReceived || dtoAlreadyRedirected) return;
 
     idOfPreviousDTOReceived = receivedDTO.getId();
-    ConsolePrinter.printReceivingDTO(receivedDTO);
+    ConsolePrinter.updatedPrintingLocks(1);
+    ConsolePrinter.printDTO(receivedDTO, getConnectedProcess(), false);
     
     boolean isMessageForThisProcess = getProcessName().equals(
       receivedDTO.getReceiver()
     );
-    if(!isMessageForThisProcess) handleDTORedirect(receivedDTO);
-
-    ConsolePrinter.updatedPrintingLocks(-1);
+    
+    synchronized(AppThread.class) {
+      if(!isMessageForThisProcess) handleDTORedirect(receivedDTO);
+      ConsolePrinter.updatedPrintingLocks(-1);
+    }
   }
 
-  private synchronized void handleDTORedirect(DTO receivedDTO) {
-    idOfPreviousDTOToSend = receivedDTO.getId();
+  private void handleDTORedirect(DTO receivedDTO) {
     currentDTOToSend = receivedDTO;
 
     ConsolePrinter.updatedPrintingLocks(1);

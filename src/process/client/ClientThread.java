@@ -53,9 +53,7 @@ public class ClientThread extends AppThread {
 
   @Override
   protected boolean processFinished() {
-    synchronized(this) {
-      return ClientProcess.getData().isFinished();
-    }
+    return ClientProcess.getData().isFinished();
   }
 
   @Override

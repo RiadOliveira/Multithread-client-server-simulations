@@ -10,7 +10,9 @@ public class ServerProcess extends AppProcess {
   private static ServerData data;
   
   public static void init(ServerData data) {
-    AppProcess.init(data.getName(), ServerThread::setCurrentDTOTOSend);
+    AppProcess.init(
+      data.getName(), ServerThread::setCurrentDTOTOSend
+    );
     ServerProcess.data = data;
   }
 
@@ -20,9 +22,9 @@ public class ServerProcess extends AppProcess {
       ConsolePrinter.print(
         "Servidor " + data.getName() + " iniciado, aguardando clientes...\n"
       );
-      ConsolePrinter.updatedPrintingLocks(data.getquantityOfClientsToConnect());
+      ConsolePrinter.updatedPrintingLocks(data.getQuantityOfClientsToConnect());
 
-      for(int ind=0; ind<data.getquantityOfClientsToConnect(); ind++) {
+      for(int ind=0; ind<data.getQuantityOfClientsToConnect(); ind++) {
         Socket clientSocket = serverSocket.accept();
         Thread serverThread = new Thread(new ServerThread(clientSocket));
         serverThread.start();
@@ -40,5 +42,9 @@ public class ServerProcess extends AppProcess {
 
   public static ServerData getData() {
     return data;
+  }
+
+  protected static int getThreadsQuantity() {
+    return data.getQuantityOfClientsToConnect();
   }
 }
