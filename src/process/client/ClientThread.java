@@ -5,7 +5,6 @@ import java.net.Socket;
 import src.dtos.DTO;
 import src.error.AppException;
 import src.process.AppThread;
-import src.process.server.ServerData;
 import src.utils.ConsolePrinter;
 
 public class ClientThread extends AppThread {
@@ -36,19 +35,11 @@ public class ClientThread extends AppThread {
   @Override
   protected boolean canSendUnicastToReceiver(String receiverServer) {
     boolean receiverIsConnectedServer = connectedServer.equals(receiverServer);
-    boolean noThreadConnectedToServer = noThreadConnectedToReceiverServer(
+    boolean noThreadConnectedToServer = ClientProcess.noThreadConnectedToReceiverServer(
       receiverServer
     );
 
     return receiverIsConnectedServer || noThreadConnectedToServer;
-  }
-
-  private boolean noThreadConnectedToReceiverServer(String receiverServer) {
-    for(ServerData data : ClientProcess.getData().getServersToConnect()) {
-      if(data.getName().equals(receiverServer)) return false;
-    }
-
-    return true;
   }
 
   @Override

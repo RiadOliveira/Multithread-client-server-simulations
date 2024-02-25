@@ -54,8 +54,9 @@ public class ConsolePrinter {
       System.out.print(clearCurrentLineString);
     }
 
+    boolean hadLocksBeforeUpdate = printingHasLocks();
     printingLocks = Math.max(0, printingLocks + updateValue);
-    if(!printingHasLocks()) printOperationMessage();
+    if(hadLocksBeforeUpdate && !printingHasLocks()) printOperationMessage();
   }
 
   public static synchronized boolean printingHasLocks() {

@@ -13,9 +13,11 @@ public class ClientProcess extends AppProcess {
   private static ClientData data;
   private static final int WAIT_TIME_TO_TRY_RECONNECTION = 3;
   
-  public static void init(ClientData data) {
+  public static void init(ClientData data, String validProcessesNames[]) {
     AppProcess.init(
-      data.getName(), ClientThread::setCurrentDTOTOSend
+      data.getName(), validProcessesNames,
+      ClientThread::setCurrentDTOTOSend,
+      ClientProcess::getThreadsQuantity
     );
     ClientProcess.data = data;
   }
@@ -95,5 +97,13 @@ public class ClientProcess extends AppProcess {
 
   protected static int getThreadsQuantity() {
     return data.getServersToConnect().size();
+  }
+
+  public static boolean noThreadConnectedToReceiverServer(String receiver) {
+    for(ServerData data : data.getServersToConnect()) {
+      if(data.getName().equals(receiver)) return false;
+    }
+
+    return true;
   }
 }

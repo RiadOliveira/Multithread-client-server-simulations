@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import simulations.ValidProcessesNames;
 import src.process.client.ClientData;
 import src.process.client.ClientProcess;
 import src.process.server.ServerData;
@@ -18,7 +19,7 @@ public class P4 {
       serversToConnect.add(new ServerData("P1", serversIp, 11111));
       
       ClientData data = new ClientData("P4", serversToConnect);
-      ClientProcess.init(data);
+      ClientProcess.init(data, ValidProcessesNames.names);
       ClientProcess.run();
     } catch (Exception exception) {
       System.out.println("Erro ao iniciar o cliente!");

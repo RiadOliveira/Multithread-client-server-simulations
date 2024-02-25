@@ -9,9 +9,11 @@ import src.utils.ConsolePrinter;
 public class ServerProcess extends AppProcess {
   private static ServerData data;
   
-  public static void init(ServerData data) {
+  public static void init(ServerData data, String validProcessesNames[]) {
     AppProcess.init(
-      data.getName(), ServerThread::setCurrentDTOTOSend
+      data.getName(), validProcessesNames,
+      ServerThread::setCurrentDTOTOSend,
+      ServerProcess::getThreadsQuantity
     );
     ServerProcess.data = data;
   }
