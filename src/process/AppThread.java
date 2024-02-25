@@ -14,7 +14,6 @@ public abstract class AppThread implements Runnable {
   protected static DTO currentDTOToSend = null;
   protected static UUID idOfPreviousDTOReceived = null;
   protected UUID idOfPreviousDTOToSend = null;
-  protected boolean canSendCurrentMessage = true;
 
   protected ObjectInputStream inputStream;
   protected ObjectOutputStream outputStream;
@@ -85,24 +84,27 @@ public abstract class AppThread implements Runnable {
 
   private void verifyAndSendDTOIfPossible(String parsedReceiver) throws Exception {
     if(currentDTOToSend == null) return;
+
     if(parsedReceiver.equals(getProcessName())) {
       currentDTOToSend = null;
       throw new AppException("O receptor deve ser outro processo!");
     }
 
     boolean isBroadcast = parsedReceiver.equals(Constants.BROADCAST_RECEIVER);
+    boolean canSendBroadcast = isBroadcast && getConnectedProcess().equals(
+      currentDTOToSend.getSender()
+    );
     boolean canSendUnicast = canSendUnicastToReceiver(parsedReceiver);
-    boolean canSendDTO = canSendCurrentMessage && (isBroadcast || canSendUnicast);
-    if(canSendDTO) sendCurrentDTO(isBroadcast);
 
-    ConsolePrinter.updatedPrintingLocks(-1);
-    canSendCurrentMessage = true;
+    if(canSendBroadcast || canSendUnicast) {
+      sendCurrentDTO(isBroadcast);
+      ConsolePrinter.updatedPrintingLocks(-1);
+    }
   }
 
   private void sendCurrentDTO(boolean isBroadcast) throws Exception {
-    boolean isBroadcastRedirect = isBroadcast &&
-      !currentDTOToSend.getSender().equals(getProcessName());
-    if(isBroadcastRedirect) {
+    boolean isRedirect = !currentDTOToSend.getSender().equals(getProcessName());
+    if(isRedirect) {
       ConsolePrinter.print(
         "\nDTO sendo redirecionado para " +
         currentDTOToSend.getReceiver() + "!"
@@ -111,7 +113,9 @@ public abstract class AppThread implements Runnable {
 
     outputStream.writeObject(currentDTOToSend);
     ConsolePrinter.printDTO(currentDTOToSend, getConnectedProcess(), true);
-    if(!isBroadcast) currentDTOToSend = null;
+
+    if(isBroadcast) idOfPreviousDTOReceived = currentDTOToSend.getId();
+    else currentDTOToSend = null;
   }
   
   protected void handleDTOReceiving(DTO receivedDTO) {
@@ -125,18 +129,19 @@ public abstract class AppThread implements Runnable {
       receivedDTO.getReceiver()
     );
     
-    synchronized(AppThread.class) {
-      if(!isMessageForThisProcess) handleDTORedirect(receivedDTO);
-      ConsolePrinter.updatedPrintingLocks(-1);
-    }
+    if(!isMessageForThisProcess) handleDTORedirect(receivedDTO);
+    ConsolePrinter.updatedPrintingLocks(-1);
   }
 
   private void handleDTORedirect(DTO receivedDTO) {
-    canSendCurrentMessage = false;
     currentDTOToSend = receivedDTO;
+    idOfPreviousDTOToSend = receivedDTO.getId();
 
+    boolean isBroadcast = receivedDTO.getReceiver().equals(
+      Constants.BROADCAST_RECEIVER
+    );
     ConsolePrinter.updatedPrintingLocks(
-      AppProcess.getThreadsQuantity.get() - 1
+      isBroadcast ? AppProcess.getThreadsQuantity.get() - 1 : 1
     );
   }
 
