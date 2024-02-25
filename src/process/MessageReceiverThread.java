@@ -61,6 +61,11 @@ public class MessageReceiverThread implements Runnable {
   }
 
   public synchronized DTO readDTO() {
-    return currentDTORead;
+    if(currentDTORead == null) return null;
+
+    DTO dtoRead = new DTO(currentDTORead);
+    currentDTORead = null;
+
+    return dtoRead;
   }
 }

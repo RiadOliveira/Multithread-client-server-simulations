@@ -20,6 +20,13 @@ public class DTO implements Serializable {
     this.receiver = receiver;
   }
 
+  public DTO(DTO dto) {
+    this.id = dto.getId();
+    this.message = dto.getMessage();
+    this.sender = dto.getSender();
+    this.receiver = dto.getReceiver();
+  }
+
   public String getPrintableString() {
     String printableString = "";
     Field[] fields = DTO.class.getDeclaredFields();

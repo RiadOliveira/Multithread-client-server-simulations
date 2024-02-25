@@ -13,6 +13,7 @@ import src.utils.ConsolePrinter;
 public abstract class AppThread implements Runnable {
   protected static DTO currentDTOToSend = null;
   protected static UUID idOfPreviousDTOToSend = null, idOfPreviousDTOReceived = null;
+  protected boolean canSendCurrentMessage = true;
 
   protected ObjectInputStream inputStream;
   protected ObjectOutputStream outputStream;
@@ -89,13 +90,14 @@ public abstract class AppThread implements Runnable {
     
     boolean isBroadcast = parsedReceiver.equals(Constants.BROADCAST_RECEIVER);
     boolean canSendUnicast = canSendUnicastToReceiver(parsedReceiver);
-    if(isBroadcast || canSendUnicast) {
+    if(canSendCurrentMessage && (isBroadcast || canSendUnicast)) {
       outputStream.writeObject(currentDTOToSend);
       ConsolePrinter.printDTO(currentDTOToSend, getConnectedProcess(), true);
       currentDTOToSend = null;
     }
 
     ConsolePrinter.updatedPrintingLocks(-1);
+    canSendCurrentMessage = true;
   }
   
   protected void handleDTOReceiving(DTO receivedDTO) {
@@ -118,6 +120,7 @@ public abstract class AppThread implements Runnable {
   }
 
   private void handleDTORedirect(DTO receivedDTO) {
+    canSendCurrentMessage = false;
     currentDTOToSend = receivedDTO;
 
     ConsolePrinter.updatedPrintingLocks(1);
