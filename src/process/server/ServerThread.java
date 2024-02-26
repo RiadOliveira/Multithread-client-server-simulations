@@ -31,7 +31,7 @@ public class ServerThread extends AppThread {
       DTO recognitionDTO = (DTO) inputStream.readObject();
 
       connectedClientIndex = connectedClients.size();
-      connectedClients.add(recognitionDTO.getMessage());
+      connectedClients.add(recognitionDTO.getSender());
 
       ConsolePrinter.print(
         "Cliente " + getConnectedProcess() + " reconhecido com sucesso!\n"

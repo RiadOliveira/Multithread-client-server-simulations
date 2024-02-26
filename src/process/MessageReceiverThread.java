@@ -34,7 +34,8 @@ public class MessageReceiverThread implements Runnable {
 
   @Override
   public void run() {
-    String disconnectMessage = "Processo desconectou-se de " + connectedProcess + "!";
+    String disconnectMessage = "Processo desconectou-se de " + 
+      connectedProcess + "!";
 
     try {
       while(inputStream != null) tryToReadInputStream();
