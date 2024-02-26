@@ -32,7 +32,7 @@ public abstract class AppProcess {
     while(ConsolePrinter.printingHasLocks());
 
     String operationData = scanner.nextLine();
-    if(operationData.equalsIgnoreCase(Constants.EXIT_OPTION)) return;
+    if(operationData.equalsIgnoreCase(Constants.FINALIZE_OPTION)) return;
 
     try {
       boolean isClearOption = operationData.equalsIgnoreCase(
