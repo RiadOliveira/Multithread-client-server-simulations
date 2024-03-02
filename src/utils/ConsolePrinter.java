@@ -7,20 +7,32 @@ import src.process.client.ClientProcess;
 import src.process.server.ServerProcess;
 
 public class ConsolePrinter {
-  private static final String clearConsoleString = "\033[H\033[2J";
+  private static final String CLEAR_CONSOLE = "\033[H\033[2J";
+  private static final String MOVE_TO_PREVIOUS_LINE = "\033[1A";
+  private static final String CLEAR_CURRENT_LINE = "\033[2K";
+  private static final String OVERWRITE_OPERATION_MESSAGE = 
+    MOVE_TO_PREVIOUS_LINE + CLEAR_CURRENT_LINE +
+    MOVE_TO_PREVIOUS_LINE + CLEAR_CURRENT_LINE;
 
   private static String operationMessageWithProcessName = null;
-  private static String clearCurrentLineString = null;
   private static int printingLocks = 0;
 
   public static synchronized void print(String content) {
+    System.out.print(content);
+  }
+
+  public static synchronized void println(String content) {
     System.out.println(content);
+  }
+
+  public static synchronized void moveToPreviousLine() {
+    print(MOVE_TO_PREVIOUS_LINE);
   }
 
   public static synchronized void printReinsertingOperationMessage(String content) {
     initOperationMessagePropertiesWithProcessName();
     print(
-      clearCurrentLineString + content +
+      "\n" + OVERWRITE_OPERATION_MESSAGE + content +
       "\n" + operationMessageWithProcessName
     );
   }
@@ -37,23 +49,20 @@ public class ConsolePrinter {
       transmissionWord + intermediaryProcessString + " (" + 
       dto.getSender() + " -> " + receiver + ")";
 
-    System.out.print(
+    print(
       "\nDados do DTO " + transmissionString +
       ":\n" + dto.getPrintableString()
     );
   }
 
   public static synchronized void clearConsole() {
-    System.out.print(clearConsoleString);  
+    print(CLEAR_CONSOLE);  
     System.out.flush();  
   }
 
-  public static synchronized void updatedPrintingLocks(int updateValue) {
-    if(printingLocks == 0 && updateValue > 0) {
-      initOperationMessagePropertiesWithProcessName();
-      System.out.print(clearCurrentLineString);
-    }
-
+  public static synchronized void updatePrintingLocks(int updateValue) {
+    if(printingLocks == 0 && updateValue > 0) print(OVERWRITE_OPERATION_MESSAGE);
+  
     boolean hadLocksBeforeUpdate = printingHasLocks();
     printingLocks = Math.max(0, printingLocks + updateValue);
     if(hadLocksBeforeUpdate && !printingHasLocks()) printOperationMessage();
@@ -65,7 +74,7 @@ public class ConsolePrinter {
 
   public static void printOperationMessage() {
     initOperationMessagePropertiesWithProcessName();
-    System.out.print(operationMessageWithProcessName);
+    print(operationMessageWithProcessName);
   }
 
   private static void initOperationMessagePropertiesWithProcessName() {
@@ -80,8 +89,5 @@ public class ConsolePrinter {
 
     operationMessageWithProcessName = 
       "\n(" + processName + ") " + Constants.OPERATION_MESSAGE;
-
-    clearCurrentLineString = 
-      "\r" + " ".repeat(operationMessageWithProcessName.length()) + "\r";
   }
 }

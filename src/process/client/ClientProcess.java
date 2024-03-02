@@ -28,11 +28,11 @@ public class ClientProcess extends AppProcess {
         data.getServersToConnect().size()
       );
       
-      ConsolePrinter.print(
+      ConsolePrinter.println(
         "Cliente " + data.getName() +
         " iniciado, tentando conectar-se aos servidores..."
       );
-      ConsolePrinter.updatedPrintingLocks(data.getServersToConnect().size());
+      ConsolePrinter.updatePrintingLocks(data.getServersToConnect().size());
 
       for(ServerData serverData : data.getServersToConnect()) {
         Socket socket = connectToServerWithRetry(serverData);
@@ -46,17 +46,17 @@ public class ClientProcess extends AppProcess {
 
       handleOperationInput();
 
+      data.setFinished(true);
       for(Socket socket : serverSockets) socket.close();
       scanner.close();
-      data.setFinished(true);
     } catch (Exception exception) {
-      ConsolePrinter.print("Erro interno do cliente!");
+      ConsolePrinter.println("Erro interno do cliente!");
     }
   }
 
   private static Socket connectToServerWithRetry(ServerData serverData) {
     String serverName = serverData.getName();
-    ConsolePrinter.print(
+    ConsolePrinter.println(
       "Tentando conectar-se ao servidor " + serverName + "..."
     );
 
@@ -69,14 +69,14 @@ public class ClientProcess extends AppProcess {
       }
     }
     
-    ConsolePrinter.print(
+    ConsolePrinter.println(
       "Servidor " + serverName + " conectado com sucesso!\n"
     );
     return serverSocket;
   }
 
   private static void waitToReconnect(String serverName) {
-    ConsolePrinter.print(
+    ConsolePrinter.println(
       "Falha ao conectar-se ao servidor " + serverName +
       ", tentando novamente em " + WAIT_TIME_TO_TRY_RECONNECTION +
       " segundos..."
@@ -85,7 +85,7 @@ public class ClientProcess extends AppProcess {
     try {
       TimeUnit.SECONDS.sleep(WAIT_TIME_TO_TRY_RECONNECTION);
     } catch (Exception exception) {
-      ConsolePrinter.print(
+      ConsolePrinter.println(
         "Falha ao esperar para tentar conectar-se ao servidor!"
       );
     }

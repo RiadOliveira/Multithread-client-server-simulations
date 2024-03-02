@@ -39,7 +39,7 @@ public class DTO implements Serializable {
 
       return printableString;
     } catch (Exception exception) {
-      ConsolePrinter.print("Falha ao exibir dados do DTO!");
+      ConsolePrinter.println("Falha ao exibir dados do DTO!");
       return null;
     }
   }

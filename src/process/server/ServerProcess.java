@@ -21,10 +21,10 @@ public class ServerProcess extends AppProcess {
   public static void run() {
     try {
       ServerSocket serverSocket = new ServerSocket(data.getPort());
-      ConsolePrinter.print(
+      ConsolePrinter.println(
         "Servidor " + data.getName() + " iniciado, aguardando clientes...\n"
       );
-      ConsolePrinter.updatedPrintingLocks(data.getQuantityOfClientsToConnect());
+      ConsolePrinter.updatePrintingLocks(data.getQuantityOfClientsToConnect());
 
       for(int ind=0; ind<data.getQuantityOfClientsToConnect(); ind++) {
         Socket clientSocket = serverSocket.accept();
@@ -34,11 +34,11 @@ public class ServerProcess extends AppProcess {
 
       handleOperationInput();
 
-      serverSocket.close();
-      scanner.close();
       data.setClosed(true);
+      scanner.close();
+      serverSocket.close();
     } catch (Exception exception) {
-      ConsolePrinter.print("Erro interno do servidor!");
+      ConsolePrinter.println("Erro interno do servidor!");
     }
   }
 

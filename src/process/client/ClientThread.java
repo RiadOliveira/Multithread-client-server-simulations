@@ -17,14 +17,14 @@ public class ClientThread extends AppThread {
 
   @Override
   protected void handleRecognitionCommunication() throws AppException {
-    ConsolePrinter.print("Thread enviando mensagem de reconhecimento...");
+    ConsolePrinter.println("Thread enviando mensagem de reconhecimento...");
 
     try {
       String clientName = ClientProcess.getData().getName(); 
       DTO recognitionDTO = new DTO(clientName, clientName, connectedServer);
 
       outputStream.writeObject(recognitionDTO);
-      ConsolePrinter.print(
+      ConsolePrinter.println(
         "Servidor " + getConnectedProcess() + " reconheceu o cliente com sucesso!\n"
       );
     } catch (Exception exception) {

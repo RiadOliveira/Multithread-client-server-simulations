@@ -11,11 +11,11 @@ import src.utils.ConsolePrinter;
 
 public abstract class AppProcess {
   private static String validProcessesNames[];
-
   protected static final Scanner scanner = new Scanner(System.in);
+
+  protected static String processName;
   protected static Consumer<DTO> setCurrentDTOTOSend;
   protected static Supplier<Integer> getThreadsQuantity;
-  protected static String processName;
 
   protected static void init(
     String processName, String validProcessesNames[],
@@ -32,6 +32,7 @@ public abstract class AppProcess {
     while(ConsolePrinter.printingHasLocks());
 
     String operationData = scanner.nextLine();
+    ConsolePrinter.moveToPreviousLine();
     if(operationData.equalsIgnoreCase(Constants.FINALIZE_OPTION)) return;
 
     try {
@@ -44,7 +45,7 @@ public abstract class AppProcess {
         ConsolePrinter.printOperationMessage();
       } else executeSendingOperation(operationData);
     } catch (AppException exception) {
-      ConsolePrinter.print(exception.getMessage());
+      ConsolePrinter.println(exception.getMessage());
       ConsolePrinter.printOperationMessage();
     } finally {
       handleOperationInput();
@@ -60,7 +61,7 @@ public abstract class AppProcess {
       String receiver = getParsedReceiver(splittedOperationData[0]);
       String message = splittedOperationData[1];
       
-      ConsolePrinter.updatedPrintingLocks(
+      ConsolePrinter.updatePrintingLocks(
         receiver.equals(Constants.BROADCAST_RECEIVER) ?
         getThreadsQuantity.get() : 1
       );

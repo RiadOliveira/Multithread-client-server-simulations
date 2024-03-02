@@ -44,7 +44,7 @@ public abstract class AppThread implements Runnable {
 
       synchronized(AppThread.class) {
         handleRecognitionCommunication();
-        ConsolePrinter.updatedPrintingLocks(-1);
+        ConsolePrinter.updatePrintingLocks(-1);
       }
 
       MessageReceiverThread messageReceiverThread = MessageReceiverThread.
@@ -58,7 +58,7 @@ public abstract class AppThread implements Runnable {
       inputStream.close();
       outputStream.close();
     } catch(Exception exception) {
-      ConsolePrinter.print(
+      ConsolePrinter.println(
         exception instanceof AppException ?
         exception.getMessage() : "Erro interno do processo!"
       );
@@ -74,11 +74,11 @@ public abstract class AppThread implements Runnable {
     try {
       synchronized(AppThread.class) {verifyAndSendDTOIfPossible(parsedReceiver);}
     } catch (Exception exception) {
-      ConsolePrinter.print(
+      ConsolePrinter.println(
         exception instanceof AppException ? exception.getMessage() :
         "Falha ao enviar a mensagem para " + parsedReceiver + "!"
       );
-      ConsolePrinter.updatedPrintingLocks(-1);
+      ConsolePrinter.updatePrintingLocks(-1);
     }
   }
 
@@ -98,14 +98,14 @@ public abstract class AppThread implements Runnable {
 
     if(canSendBroadcast || canSendUnicast) {
       sendCurrentDTO(isBroadcast);
-      ConsolePrinter.updatedPrintingLocks(-1);
+      ConsolePrinter.updatePrintingLocks(-1);
     }
   }
 
   private void sendCurrentDTO(boolean isBroadcast) throws Exception {
     boolean isRedirect = !currentDTOToSend.getSender().equals(getProcessName());
     if(isRedirect) {
-      ConsolePrinter.print(
+      ConsolePrinter.println(
         "\nDTO sendo redirecionado para " +
         currentDTOToSend.getReceiver() + "!"
       );
@@ -122,7 +122,7 @@ public abstract class AppThread implements Runnable {
     if(alreadyUsedOrInvalidDTO(idOfPreviousDTOReceived, receivedDTO)) return;
 
     idOfPreviousDTOReceived = receivedDTO.getId();
-    ConsolePrinter.updatedPrintingLocks(1);
+    ConsolePrinter.updatePrintingLocks(1);
     ConsolePrinter.printDTO(receivedDTO, getConnectedProcess(), false);
     
     boolean isMessageForThisProcess = getProcessName().equals(
@@ -130,7 +130,7 @@ public abstract class AppThread implements Runnable {
     );
     
     if(!isMessageForThisProcess) handleDTORedirect(receivedDTO);
-    ConsolePrinter.updatedPrintingLocks(-1);
+    ConsolePrinter.updatePrintingLocks(-1);
   }
 
   private void handleDTORedirect(DTO receivedDTO) {
@@ -140,7 +140,7 @@ public abstract class AppThread implements Runnable {
     boolean isBroadcast = receivedDTO.getReceiver().equals(
       Constants.BROADCAST_RECEIVER
     );
-    ConsolePrinter.updatedPrintingLocks(
+    ConsolePrinter.updatePrintingLocks(
       isBroadcast ? AppProcess.getThreadsQuantity.get() - 1 : 1
     );
   }
