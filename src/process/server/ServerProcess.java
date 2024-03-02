@@ -21,10 +21,11 @@ public class ServerProcess extends AppProcess {
   public static void run() {
     try {
       ServerSocket serverSocket = new ServerSocket(data.getPort());
-      ConsolePrinter.updatePrintingLocks(data.getQuantityOfClientsToConnect());
+      
       ConsolePrinter.println(
         "Servidor " + data.getName() + " iniciado, aguardando clientes...\n"
       );
+      ConsolePrinter.updatePrintingLocks(data.getQuantityOfClientsToConnect());
 
       for(int ind=0; ind<data.getQuantityOfClientsToConnect(); ind++) {
         Socket clientSocket = serverSocket.accept();

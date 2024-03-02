@@ -44,7 +44,7 @@ public abstract class AppThread implements Runnable {
 
       synchronized(AppThread.class) {
         handleRecognitionCommunication();
-        ConsolePrinter.updatePrintingLocks(-1);
+        ConsolePrinter.updatePrintingLocksHandlingOperationMessage(-1);
       }
 
       MessageReceiverThread messageReceiverThread = MessageReceiverThread.
@@ -78,7 +78,7 @@ public abstract class AppThread implements Runnable {
         exception instanceof AppException ? exception.getMessage() :
         "Falha ao enviar a mensagem para " + parsedReceiver + "!"
       );
-      ConsolePrinter.updatePrintingLocks(-1);
+      ConsolePrinter.updatePrintingLocksHandlingOperationMessage(-1);
     }
   }
 
@@ -98,7 +98,7 @@ public abstract class AppThread implements Runnable {
 
     if(canSendBroadcast || canSendUnicast) {
       sendCurrentDTO(isBroadcast);
-      ConsolePrinter.updatePrintingLocks(-1);
+      ConsolePrinter.updatePrintingLocksHandlingOperationMessage(-1);
     }
   }
 
@@ -122,7 +122,7 @@ public abstract class AppThread implements Runnable {
     if(alreadyUsedOrInvalidDTO(idOfPreviousDTOReceived, receivedDTO)) return;
 
     idOfPreviousDTOReceived = receivedDTO.getId();
-    ConsolePrinter.updatePrintingLocks(1);
+    ConsolePrinter.updatePrintingLocksHandlingOperationMessage(1);
     ConsolePrinter.printDTO(receivedDTO, getConnectedProcess(), false);
     
     boolean isMessageForThisProcess = getProcessName().equals(
@@ -130,7 +130,7 @@ public abstract class AppThread implements Runnable {
     );
     
     if(!isMessageForThisProcess) handleDTORedirect(receivedDTO);
-    ConsolePrinter.updatePrintingLocks(-1);
+    ConsolePrinter.updatePrintingLocksHandlingOperationMessage(-1);
   }
 
   private void handleDTORedirect(DTO receivedDTO) {
@@ -140,7 +140,7 @@ public abstract class AppThread implements Runnable {
     boolean isBroadcast = receivedDTO.getReceiver().equals(
       Constants.BROADCAST_RECEIVER
     );
-    ConsolePrinter.updatePrintingLocks(
+    ConsolePrinter.updatePrintingLocksHandlingOperationMessage(
       isBroadcast ? AppProcess.getThreadsQuantity.get() - 1 : 1
     );
   }

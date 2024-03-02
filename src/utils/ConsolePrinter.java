@@ -60,12 +60,18 @@ public class ConsolePrinter {
     System.out.flush();  
   }
 
-  public static synchronized void updatePrintingLocks(int updateValue) {
+  public static synchronized void updatePrintingLocksHandlingOperationMessage(
+    int updateValue
+  ) {
     if(printingLocks == 0 && updateValue > 0) print(OVERWRITE_OPERATION_MESSAGE);
   
     boolean hadLocksBeforeUpdate = printingHasLocks();
-    printingLocks = Math.max(0, printingLocks + updateValue);
+    updatePrintingLocks(updateValue);
     if(hadLocksBeforeUpdate && !printingHasLocks()) printOperationMessage();
+  }
+
+  public static synchronized void updatePrintingLocks(int updateValue) {
+    printingLocks = Math.max(0, printingLocks + updateValue);
   }
 
   public static synchronized boolean printingHasLocks() {

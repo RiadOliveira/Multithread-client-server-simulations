@@ -61,7 +61,7 @@ public abstract class AppProcess {
       String receiver = getParsedReceiver(splittedOperationData[0]);
       String message = splittedOperationData[1];
       
-      ConsolePrinter.updatePrintingLocks(
+      ConsolePrinter.updatePrintingLocksHandlingOperationMessage(
         receiver.equals(Constants.BROADCAST_RECEIVER) ?
         getThreadsQuantity.get() : 1
       );
