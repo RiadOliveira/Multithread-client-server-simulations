@@ -28,11 +28,11 @@ public class ClientProcess extends AppProcess {
         data.getServersToConnect().size()
       );
       
+      ConsolePrinter.updatePrintingLocks(data.getServersToConnect().size());
       ConsolePrinter.println(
         "Cliente " + data.getName() +
         " iniciado, tentando conectar-se aos servidores..."
       );
-      ConsolePrinter.updatePrintingLocks(data.getServersToConnect().size());
 
       for(ServerData serverData : data.getServersToConnect()) {
         Socket socket = connectToServerWithRetry(serverData);
