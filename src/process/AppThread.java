@@ -69,34 +69,31 @@ public abstract class AppThread implements Runnable {
     if(alreadyUsedOrInvalidDTO(idOfPreviousDTOToSend, currentDTOToSend)) return;
 
     idOfPreviousDTOToSend = currentDTOToSend.getId();
-    String parsedReceiver = currentDTOToSend.getReceiver().toUpperCase();
+    String receiver = currentDTOToSend.getReceiver();
     
     try {
-      synchronized(AppThread.class) {verifyAndSendDTOIfPossible(parsedReceiver);}
+      synchronized(AppThread.class) {verifyAndSendDTOIfPossible(receiver);}
     } catch (Exception exception) {
       ConsolePrinter.println(
         exception instanceof AppException ? exception.getMessage() :
-        "Falha ao enviar a mensagem para " + parsedReceiver + "!"
+        "Falha ao enviar a mensagem para " + receiver + "!"
       );
       ConsolePrinter.updatePrintingLocksHandlingOperationMessage(-1);
     }
   }
 
-  private void verifyAndSendDTOIfPossible(String parsedReceiver) throws Exception {
+  private void verifyAndSendDTOIfPossible(String receiver) throws Exception {
     if(currentDTOToSend == null) return;
 
-    if(parsedReceiver.equals(getProcessName())) {
+    if(receiver.equals(getProcessName())) {
       currentDTOToSend = null;
       throw new AppException("O receptor deve ser outro processo!");
     }
 
-    boolean isBroadcast = parsedReceiver.equals(Constants.BROADCAST_RECEIVER);
-    boolean canSendBroadcast = isBroadcast && getConnectedProcess().equals(
-      currentDTOToSend.getSender()
-    );
-    boolean canSendUnicast = canSendUnicastToReceiver(parsedReceiver);
+    boolean isBroadcast = receiver.equals(Constants.BROADCAST_RECEIVER);
+    boolean canSendUnicast = canSendUnicastToReceiver(receiver);
 
-    if(canSendBroadcast || canSendUnicast) {
+    if(isBroadcast || canSendUnicast) {
       sendCurrentDTO(isBroadcast);
       ConsolePrinter.updatePrintingLocksHandlingOperationMessage(-1);
     }
@@ -147,7 +144,7 @@ public abstract class AppThread implements Runnable {
 
   private boolean alreadyUsedOrInvalidDTO(UUID idOfPreviousDTO, DTO currentDTO) {
     if(currentDTO == null) return true;
-    return idOfPreviousDTO != null &&idOfPreviousDTO.equals(currentDTO.getId());
+    return idOfPreviousDTO != null && idOfPreviousDTO.equals(currentDTO.getId());
   }
 
   public static void setCurrentDTOTOSend(DTO currentDTOTOSend) {
