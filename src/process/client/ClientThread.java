@@ -17,7 +17,7 @@ public class ClientThread extends AppThread {
 
   @Override
   protected void handleRecognitionCommunication() throws AppException {
-    ConsolePrinter.println("Thread enviando mensagem de reconhecimento...");
+    ConsolePrinter.println("\nThread enviando mensagem de reconhecimento...");
 
     try {
       String clientName = ClientProcess.getData().getName(); 
