@@ -33,7 +33,7 @@ public class ServerProcess extends AppProcess {
         serverThread.start();
       }
 
-      handleOperationInput();
+      handleInputReceiving();
 
       data.setClosed(true);
       scanner.close();

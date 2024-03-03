@@ -28,12 +28,21 @@ public abstract class AppProcess {
     AppProcess.getThreadsQuantity = getThreadsQuantity;
   }
 
-  protected static void handleOperationInput() {
+  protected static void handleInputReceiving() {
+    boolean choseFinalizeOption = false;
+    while(!choseFinalizeOption) {
+      choseFinalizeOption = processUserInputCheckingIfFinalized();
+    }
+  }
+
+  private static boolean processUserInputCheckingIfFinalized() {
     while(ConsolePrinter.printingHasLocks());
 
     String operationData = scanner.nextLine();
     ConsolePrinter.moveToPreviousLine();
-    if(operationData.equalsIgnoreCase(Constants.FINALIZE_OPTION)) return;
+    if(operationData.equalsIgnoreCase(Constants.FINALIZE_OPTION)) {
+      return true;
+    }
 
     try {
       boolean isClearOption = operationData.equalsIgnoreCase(
@@ -47,9 +56,9 @@ public abstract class AppProcess {
     } catch (AppException exception) {
       ConsolePrinter.println(exception.getMessage());
       ConsolePrinter.printOperationMessage();
-    } finally {
-      handleOperationInput();
     }
+
+    return false;
   }
 
   private static void executeSendingOperation(

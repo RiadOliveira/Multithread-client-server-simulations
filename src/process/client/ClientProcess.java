@@ -44,7 +44,7 @@ public class ClientProcess extends AppProcess {
         clientThread.start();
       }
 
-      handleOperationInput();
+      handleInputReceiving();
 
       data.setFinished(true);
       for(Socket socket : serverSockets) socket.close();
